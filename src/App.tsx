@@ -8,7 +8,8 @@ import TradingBotFooter from './layouts/Footer';
 //import NotFoundPage from './layouts/404Page';
 import './App.css'
 //import ServiceRates from './pages/Services_Rates';
-import ExtensionPage from './pages/Download_Extension';
+//import ExtensionPage from './pages/Download_Extension';
+import PersonalInfomation from './pages/Personal_Info';
 
 
 
@@ -18,7 +19,7 @@ function App() {
   return (  
     <>
       <TradingBotHeader />
-      <ExtensionPage />
+      <PersonalInfomation />
       <TradingBotFooter/>
     </>
     // <NotFoundPage />
