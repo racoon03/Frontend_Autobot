@@ -9,6 +9,8 @@ import TradingBotFooter from './layouts/Footer';
 import './App.css'
 //import ServiceRates from './pages/Services_Rates';
 import ExtensionPage from './pages/Download_Extension';
+import DefaultLayout from './layouts/DefaultLayout';
+import LogHistory from './pages/LogHistory';
 
 
 
@@ -17,9 +19,9 @@ function App() {
 
   return (  
     <>
-      <TradingBotHeader />
-      <ExtensionPage />
-      <TradingBotFooter/>
+      <DefaultLayout> 
+        <LogHistory></LogHistory>
+      </DefaultLayout>
     </>
     // <NotFoundPage />
     //<ServiceRates/>
