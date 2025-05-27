@@ -16,13 +16,13 @@ import LogHistory from './pages/LogHistory';
 
 function App() {
   //const [count, setCount] = useState(0)
-
   return (  
     <>
       <DefaultLayout> 
         <LogHistory></LogHistory>
       </DefaultLayout>
     </>
+
     // <NotFoundPage />
     //<ServiceRates/>
   )
