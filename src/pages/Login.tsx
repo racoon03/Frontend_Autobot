@@ -35,7 +35,7 @@ const Login: React.FC = () => {
         {/* TRÁI - ẢNH */}
         <div style={{ flex: 1, position: 'relative' }}>
           <img
-            src="/login-bg.jpg"
+            src="src\assets\1000_F_1369373417_m2Oa554rcYSDHPXowqTv2XnqbdfWhnJY.jpg"
             alt="bg"
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
@@ -43,7 +43,7 @@ const Login: React.FC = () => {
             style={{
               position: 'absolute',
               inset: 0,
-              backgroundColor: 'rgba(30, 64, 175, 0.7)',
+              backgroundColor: 'rgba(30, 64, 175, 0.5)',
             }}
           />
         </div>
@@ -61,15 +61,15 @@ const Login: React.FC = () => {
         >
           {/* LOGO */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-            <img src="/logo.png" alt="logo" style={{ width: '40px', height: '40px' }} />
-            <h1 style={{ fontSize: '26px', margin: 0, fontWeight: 700, color: '#111827' }}>
+            <img src="src\assets\iconbothi.jpg" alt="logo" style={{ width: '60px'}} />
+            <h1 style={{ fontFamily: 'Orbitron, sans-serif' , fontSize: '26px', margin: 0, fontWeight: 400, color: '#111827' }}>
               TradingBot
             </h1>
           </div>
 
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: '#111827' }}>Đăng nhập</h2>
           <p style={{ fontSize: '14px', marginBottom: '20px', color: '#6b7280' }}>
-            Chào mừng bạn đến với minh.autobot
+            Chào mừng bạn đến với Autobot
           </p>
 
           <Form layout="vertical" onFinish={onFinish} initialValues={{ remember: true }}>
