@@ -4,8 +4,8 @@
 
 
 import TradingBotHeader from './layouts/Header';
-import TradingBotFooter from './layouts/Footer';
-import NotFoundPage from './layouts/404Page';
+//import TradingBotFooter from './layouts/Footer';
+//import NotFoundPage from './layouts/404Page';
 import './App.css'
 
 
