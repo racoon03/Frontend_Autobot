@@ -5,7 +5,8 @@
 
 import TradingBotHeader from './layouts/Header';
 import TradingBotFooter from './layouts/Footer';
-import NotFoundPage from './layouts/404Page';
+import TradingBotInfo from './layouts/Infomation';
+//import NotFoundPage from './layouts/404Page';
 import './App.css'
 
 
@@ -14,9 +15,12 @@ function App() {
   //const [count, setCount] = useState(0)
 
   return (
-    <TradingBotHeader />
-    // <TradingBotFooter/>
-    // <NotFoundPage />
+    <>
+      <TradingBotHeader />
+      <TradingBotInfo/>
+      <TradingBotFooter />
+      {/* <NotFoundPage /> */}
+    </>
   )
 }
 
