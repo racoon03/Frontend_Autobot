@@ -7,8 +7,9 @@ import TradingBotHeader from './layouts/Header';
 import TradingBotFooter from './layouts/Footer';
 //import NotFoundPage from './layouts/404Page';
 import './App.css'
-import ServiceRates from './pages/Services_Rates';
-import DefaultLayout from './layouts/DefaultLayout';
+//import ServiceRates from './pages/Services_Rates';
+import ExtensionPage from './pages/Download_Extension';
+
 
 
 function App() {
@@ -16,11 +17,12 @@ function App() {
 
   return (  
     <>
-      <DefaultLayout>
-        <ServiceRates/>
-      </DefaultLayout>
+      <TradingBotHeader />
+      <ExtensionPage />
+      <TradingBotFooter/>
     </>
     // <NotFoundPage />
+    //<ServiceRates/>
   )
 }
 
