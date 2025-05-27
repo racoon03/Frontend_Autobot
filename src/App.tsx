@@ -8,7 +8,7 @@ import TradingBotFooter from './layouts/Footer';
 //import NotFoundPage from './layouts/404Page';
 import './App.css'
 import ServiceRates from './pages/Services_Rates';
-
+import DefaultLayout from './layouts/DefaultLayout';
 
 
 function App() {
@@ -16,9 +16,9 @@ function App() {
 
   return (  
     <>
-      <TradingBotHeader />
-      <ServiceRates/>
-      <TradingBotFooter/>
+      <DefaultLayout>
+        <ServiceRates/>
+      </DefaultLayout>
     </>
     // <NotFoundPage />
   )
