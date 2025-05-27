@@ -4,18 +4,22 @@
 
 
 import TradingBotHeader from './layouts/Header';
-//import TradingBotFooter from './layouts/Footer';
+import TradingBotFooter from './layouts/Footer';
 //import NotFoundPage from './layouts/404Page';
 import './App.css'
+import ServiceRates from './pages/Services_Rates';
 
 
 
 function App() {
   //const [count, setCount] = useState(0)
 
-  return (
-    <TradingBotHeader />
-    // <TradingBotFooter/>
+  return (  
+    <>
+      <TradingBotHeader />
+      <ServiceRates/>
+      <TradingBotFooter/>
+    </>
     // <NotFoundPage />
   )
 }
