@@ -1,6 +1,6 @@
 //import React from "react";
 
-export default function TradingBotInfo() {
+export default function About() {
   return (
     <div className="bg-[#1A2238] text-white font-sans">
       <div className="mx-60">

@@ -62,7 +62,7 @@ const FeatureCarousel = () => {
   );
 };
 
-const HomePage = () => {
+const Home = () => {
   return (
     <div className="font-sans">
       {/* Header Section */}
@@ -103,4 +103,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default Home;
