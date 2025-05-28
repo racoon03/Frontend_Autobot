@@ -69,7 +69,7 @@ const Register: React.FC = () => {
 
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: '#111827' }}>Đăng ký</h2>
           <p style={{ fontSize: '14px', marginBottom: '20px', color: '#6b7280' }}>
-            Tạo tài khoản mới tại Autobot
+            Tạo tài khoản mới tại Tradingbot
           </p>
 
           <Form layout="vertical" onFinish={onFinish}>

@@ -17,6 +17,7 @@ import Backtest from '../pages/Backtest';
 import ExtensionPage from '../pages/Download_Extension';
 import ServiceRates from '../pages/Services_Rates';
 import Information from '../pages/Personal_Info';
+import ForgotPassword from '../pages/ForgotPassword';
 
 // Private Pages
 import LogHistory from '../pages/LogHistory';
@@ -26,6 +27,7 @@ const publicRoutes: RouteType[] = [
   { path: '/', component: Home },
   { path: '/login', component: Login, layout: null },
   { path: '/register', component: Register, layout: null },
+  { path: '/forgot-password', component: ForgotPassword, layout: null },
   { path: '/about', component: About },
   { path: '/backtest', component: Backtest },
   { path: '/extension', component: ExtensionPage },

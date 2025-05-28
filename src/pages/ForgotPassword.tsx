@@ -1,13 +1,13 @@
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Form, Input } from 'antd';
+import { LockOutlined, UserOutlined, MailOutlined, SafetyOutlined } from '@ant-design/icons';
+import { Button, Form, Input } from 'antd';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-
-const Login: React.FC = () => {
+const ForgotPassword: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onFinish = (values: any) => {
-    console.log('Đăng nhập:', values);
+    console.log('Quên mật khẩu:', values);
+    // Thêm logic xử lý quên mật khẩu ở đây
   };
 
   return (
@@ -22,7 +22,7 @@ const Login: React.FC = () => {
         fontFamily: 'system-ui, -apple-system, Helvetica, Arial, sans-serif',
       }}
     >
-      {/* KHỐI LOGIN CHÍNH */}
+      {/* KHỐI CHÍNH */}
       <div
         style={{
           width: '900px',
@@ -69,52 +69,43 @@ const Login: React.FC = () => {
             </h1>
           </div>
 
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: '#111827' }}>Đăng nhập</h2>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: '#111827' }}>Quên mật khẩu</h2>
           <p style={{ fontSize: '14px', marginBottom: '20px', color: '#6b7280' }}>
-            Chào mừng bạn đến với Tradingbot
+            Nhập email để nhận mã xác minh
           </p>
 
-          <Form layout="vertical" onFinish={onFinish} initialValues={{ remember: true }}>
+          <Form layout="vertical" onFinish={onFinish}>
             <Form.Item
-              name="phone"
-              rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
+              name="email"
+              rules={[{ required: true, message: 'Vui lòng nhập email!', type: 'email' }]}
             >
               <Input
                 size="large"
-                placeholder="Số điện thoại"
-                prefix={<UserOutlined />}
+                placeholder="Email"
+                prefix={<MailOutlined />}
               />
             </Form.Item>
 
             <Form.Item
-              name="password"
-              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
+              name="verifyCode"
+              rules={[{ required: true, message: 'Vui lòng nhập mã xác minh!' }]}
             >
-            <Input.Password
+              <Input
                 size="large"
-                placeholder="Mật khẩu"
-                prefix={<LockOutlined />}
+                placeholder="Mã xác minh"
+                prefix={<SafetyOutlined />}
+                addonAfter={<Button>Gửi mã</Button>}
               />
             </Form.Item>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox>Remember me</Checkbox>
-              </Form.Item>
-            </div>
-
             <Form.Item>
               <Button type="primary" htmlType="submit" size="large" block>
-                Đăng nhập
+                Đặt lại mật khẩu
               </Button>
             </Form.Item>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6b7280' }}>
-              <span>
-                Bạn chưa có tài khoản?{' '}
-                <Link to="/register" style={{ color: '#2563eb', fontWeight: 500 }}>Đăng ký</Link>
-              </span>
-              <Link to="/forgot-password" style={{ color: '#2563eb', fontWeight: 500 }}>Quên mật khẩu</Link>
+              <Link to="/login" style={{ color: '#2563eb', fontWeight: 500 }}>Quay lại đăng nhập</Link>
             </div>
           </Form>
         </div>
@@ -123,4 +114,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default ForgotPassword; 
