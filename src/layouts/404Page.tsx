@@ -1,6 +1,13 @@
 import { Button } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 function NotFoundPage() {
+  const navigate = useNavigate();
+
+  const handleGoHome = () => {
+    navigate('/');
+  };
+
   return (
     <div className="relative flex flex-col items-center justify-center h-screen bg-black" 
     style={{ 
@@ -21,6 +28,7 @@ function NotFoundPage() {
         <Button
             type="primary"
             className="bg-blue-600 hover:bg-blue-700 active:scale-95 transition-transform duration-150 text-white font-bold uppercase px-10 py-5 rounded-full tracking-wide"
+            onClick={handleGoHome}
             >
             Go Back Home
         </Button>

@@ -10,6 +10,7 @@ import {
   faDownload,
   faListOl,
 } from "@fortawesome/free-solid-svg-icons";
+// import { style } from "framer-motion/client"; // This import seems unused and can be removed if not needed elsewhere
 
 function ExtensionPage() {
     return (
@@ -26,7 +27,7 @@ function ExtensionPage() {
           <div className="text-center mb-10 bg-black bg-opacity-60 p-6 rounded-xl">
             <h1 className="text-3xl md:text-4xl font-bold mb-2">
               <FontAwesomeIcon icon={faRobot} className="mr-2 text-blue-400" />
-              Giao dịch chứng khoán cùng <span className="text-blue-400">MinhAutoBot</span>
+              Giao dịch chứng khoán cùng <span className="text-blue-400">Autobot</span>
             </h1>
             <p className="text-gray-300 max-w-xl mx-auto">
               Extension Chrome hỗ trợ giao dịch tự động trên nền tảng VPS và các công ty chứng khoán. Tự động đặt lệnh, chốt lời, cắt lỗ theo tín hiệu từ hệ thống. Tích hợp trực tiếp vào giao diện giao dịch, giúp nhà đầu tư tiết kiệm thời gian và tối ưu hóa chiến lược giao dịch.
@@ -43,7 +44,7 @@ function ExtensionPage() {
               <FontAwesomeIcon icon={faToolbox} className="mr-2" />
               Tính năng nổi bật
             </h2>
-            <ul className="list-disc list-inside space-y-2">
+            <ul className="list-none list-inside space-y-2">
               <li>
                 <FontAwesomeIcon icon={faArrowTrendUp} className="mr-2" />
                 Nhận tín hiệu mua bán tự động theo chiến lược
