@@ -4,7 +4,6 @@ import { Button, Card } from 'antd';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
-
 const features = [
   {
     title: 'Dễ sử dụng',
@@ -76,6 +75,7 @@ const FeatureCarousel = () => {
   );
 };
 
+
 const HomePage = () => {
   return (
     <div className="font-sans">
@@ -118,5 +118,4 @@ const HomePage = () => {
     </div>
   );
 };
-
-export default HomePage;
+export default Home;
