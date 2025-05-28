@@ -3,21 +3,18 @@ import { Layout } from 'antd';
 import TradingBotHeader from './Header';
 import TradingBotFooter from './Footer';
 import { Content } from 'antd/es/layout/layout';
+import { Outlet } from 'react-router-dom'; // 👈 Thêm Outlet
 
-interface DefaultLayoutProps {
-  children: React.ReactNode;
-}
-
-const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
+const DefaultLayout: React.FC = () => {
   return (
     <Layout className="min-h-screen">
       <TradingBotHeader />
       <Content className="m-4 p-4 drop-shadow rounded-lg bg-white">
-        {children}
+        <Outlet /> {/* 👈 Thay thế children */}
       </Content>
       <TradingBotFooter />
     </Layout>
   );
 };
 
-export default DefaultLayout; 
+export default DefaultLayout;
