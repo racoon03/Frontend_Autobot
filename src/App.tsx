@@ -7,6 +7,7 @@ import './App.css'
 //import ServiceRates from './pages/Services_Rates';
 import DefaultLayout from './layouts/DefaultLayout';
 import About from './pages/About';
+import HomePage from './pages/Home';
 
 
 
@@ -16,7 +17,7 @@ function App() {
     <>
 
       <DefaultLayout> 
-         <About></About>
+         <HomePage></HomePage>
       </DefaultLayout>
 
     </>
