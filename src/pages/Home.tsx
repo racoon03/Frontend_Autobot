@@ -118,4 +118,4 @@ const HomePage = () => {
     </div>
   );
 };
-export default Home;
+export default HomePage;
