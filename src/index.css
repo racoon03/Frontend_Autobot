@@ -4,7 +4,7 @@
 
 .feature-carousel .slick-slide {
   transition: transform 0.5s ease;
-  transform: scale(0.8) perspective(600px) rotateY(10deg);
+  transform: scale(0.8) perspective(600px) rotateX(10deg);
   opacity: 0.6;
 }
 

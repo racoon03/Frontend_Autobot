@@ -11,6 +11,8 @@ import './App.css'
 import ExtensionPage from './pages/Download_Extension';
 import DefaultLayout from './layouts/DefaultLayout';
 import LogHistory from './pages/LogHistory';
+import HomePage from './pages/Home_page';
+import TradingBotInfo from './pages/Information';
 
 
 
@@ -18,9 +20,7 @@ function App() {
   //const [count, setCount] = useState(0)
   return (  
     <>
-      <DefaultLayout> 
-        <LogHistory></LogHistory>
-      </DefaultLayout>
+        <HomePage/>
     </>
 
     // <NotFoundPage />
