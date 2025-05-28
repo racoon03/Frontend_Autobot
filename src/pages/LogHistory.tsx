@@ -31,7 +31,6 @@ const LogHistory: React.FC = () => {
   ];
 
   const data = [
-    // Example data rows (replace with actual data)
     { key: '1', time: '10/07/2024 14:30:53', type: 'SHORT', closePrice: 1324.2, sl: '-', contract: 1324.2, matchPrice: 100.000, profit: 300.000 },
     { key: '2', time: '10/07/2024 14:30:53', type: 'SHORT', closePrice: 1324.2, sl: '-', contract: 1324.2, matchPrice: 100.000, profit: 300.000 },
   ];
