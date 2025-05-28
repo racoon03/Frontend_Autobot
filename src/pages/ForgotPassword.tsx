@@ -62,12 +62,14 @@ const ForgotPassword: React.FC = () => {
           }}
         >
           {/* LOGO */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-            <img src="src\assets\iconbothi.jpg" alt="logo" style={{ width: '60px'}} />
-            <h1 style={{ fontFamily: 'Orbitron, sans-serif' , fontSize: '26px', margin: 0, fontWeight: 400, color: '#111827' }}>
-              TradingBot
-            </h1>
-          </div>
+          <Link to="/">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+              <img src="src\assets\iconbothi.jpg" alt="logo" style={{ width: '60px'}} />
+              <h1 style={{ fontFamily: 'Orbitron, sans-serif' , fontSize: '26px', margin: 0, fontWeight: 400, color: '#111827' }}>
+                TradingBot
+              </h1>
+            </div>
+          </Link>
 
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: '#111827' }}>Quên mật khẩu</h2>
           <p style={{ fontSize: '14px', marginBottom: '20px', color: '#6b7280' }}>

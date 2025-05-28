@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
 
-const BacktestPage: React.FC = () => {
+const Backtest: React.FC = () => {
   const columns = [
     { title: 'Thời gian', dataIndex: 'time', key: 'time' },
     { title: 'Loại lệnh', dataIndex: 'type', key: 'type' },
@@ -82,4 +82,4 @@ const BacktestPage: React.FC = () => {
   );
 };
 
-export default BacktestPage;
+export default Backtest;

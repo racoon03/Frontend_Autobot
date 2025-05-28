@@ -1,13 +1,46 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Form, Input } from 'antd';
-import React from 'react';
-import { Link } from 'react-router-dom';
-
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService';
+import { useMessage, useAuth } from '../App';
+import { LOGIN_SUCCESS } from '../services/authActions';
 
 const Login: React.FC = () => {
+  const navigate = useNavigate();
+  const antMessage = useMessage();
+  const auth = useAuth();
+
+  if (!auth) {
+    console.error("Auth context not available in Login page.");
+    return null;
+  }
+
+  const { dispatch } = auth;
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onFinish = (values: any) => {
-    console.log('Đăng nhập:', values);
+  const onFinish = async (values: any) => {
+    setIsSubmitting(true);
+    try {
+      const userData = await authService.login(values.phone, values.password);
+
+      dispatch({ type: LOGIN_SUCCESS, payload: { user: userData } });
+
+      if (antMessage) {
+        antMessage.success('Đăng nhập thành công!');
+      }
+      navigate('/');
+
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      if (antMessage) {
+        antMessage.error(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -18,7 +51,7 @@ const Login: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#f3f4f6', // xám nền ngoài giống Figma
+        backgroundColor: '#f3f4f6',
         fontFamily: 'system-ui, -apple-system, Helvetica, Arial, sans-serif',
       }}
     >
@@ -62,12 +95,14 @@ const Login: React.FC = () => {
           }}
         >
           {/* LOGO */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-            <img src="src\assets\iconbothi.jpg" alt="logo" style={{ width: '60px'}} />
-            <h1 style={{ fontFamily: 'Orbitron, sans-serif' , fontSize: '26px', margin: 0, fontWeight: 400, color: '#111827' }}>
-              TradingBot
-            </h1>
-          </div>
+          <Link to="/">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+              <img src="src\assets\iconbothi.jpg" alt="logo" style={{ width: '60px'}} />
+              <h1 style={{ fontFamily: 'Orbitron, sans-serif' , fontSize: '26px', margin: 0, fontWeight: 400, color: '#111827' }}>
+                TradingBot
+              </h1>
+            </div>
+          </Link>
 
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: '#111827' }}>Đăng nhập</h2>
           <p style={{ fontSize: '14px', marginBottom: '20px', color: '#6b7280' }}>
@@ -104,7 +139,7 @@ const Login: React.FC = () => {
             </div>
 
             <Form.Item>
-              <Button type="primary" htmlType="submit" size="large" block>
+              <Button type="primary" htmlType="submit" size="large" block loading={isSubmitting}>
                 Đăng nhập
               </Button>
             </Form.Item>
