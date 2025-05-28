@@ -1,5 +1,6 @@
 //import React from "react";
 
+
 export default function About() {
   return (
     <div className="bg-[#1A2238] text-white font-sans">
@@ -13,14 +14,14 @@ export default function About() {
       </div>
 
       <section className="p-8 space-y-12">
-        <div className="flex flex-col md:flex-row items-center gap 8 ">
-          <p>
+        <div className="flex flex-col md:flex-row items-center gap-24 ">
+          <p className="ml-24">
             Trong thời đại công nghệ 4.0, việc ứng dụng trí tuệ nhân tạo (AI) và máy học (machine learning) vào đầu tư chứng khoán đã trở nên phổ biến và đem lại nhiều lợi ích đáng kể cho nhà đầu tư. Bot Đầu Tư Chứng Khoán là một công cụ mạnh mẽ giúp bạn tối ưu hóa danh mục đầu tư và gia tăng lợi nhuận với sự hỗ trợ của công nghệ hiện đại nhất, đặc biệt được phát triển trên nền tảng Amibroker.
           </p>
           <img src="src/assets/info4.png" alt="AI Bot" className="w-[480px] h-[240px]" />
         </div>
         
-        <div className="flex flex-col md:flex-row items-center gap-8">
+        <div className="flex flex-col md:flex-row items-center gap-24">
           <img src="src/assets/info6.png" alt="Chart" className="w-[480px] h-[240px] object-cover rounded" />
           <div className="md:w-1/2">
             <h3 className="text-xl font-semibold">Phân Tích Dữ Liệu Nhanh Chóng Và Chính Xác</h3>
@@ -30,7 +31,7 @@ export default function About() {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row-reverse items-center gap-8">
+        <div className="flex flex-col md:flex-row-reverse items-center gap-24">
           <img src="src/assets/info1.png" alt="Automation" className="w-[480px] h-[240px] object-cover rounded" />
           <div className="md:w-1/2">
             <h3 className="text-xl font-semibold">Giao Dịch Tự Động Và Linh Hoạt</h3>
@@ -40,7 +41,7 @@ export default function About() {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center gap-8">
+        <div className="flex flex-col md:flex-row items-center gap-24">
           <img src="src/assets/info.png" alt="Risk" className="w-[480px] h-[240px] object-cover rounded" />
           <div className="md:w-1/2">
             <h3 className="text-xl font-semibold">Giảm Thiểu Rủi Ro</h3>
@@ -50,7 +51,7 @@ export default function About() {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row-reverse items-center gap-8">
+        <div className="flex flex-col md:flex-row-reverse items-center gap-24">
           <img src="src/assets/info3.png" alt="Support" className="w-[480px] h-[240px] object-cover rounded" />
           <div className="md:w-1/2">
             <h3 className="text-xl font-semibold">Hỗ Trợ 24/7</h3>
