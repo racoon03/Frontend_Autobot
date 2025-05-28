@@ -2,10 +2,6 @@ import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import Cookies from 'js-cookie';
 
-// Types
-
-
-// Types
 interface UserData {
     userId: string;
     name: string;
@@ -14,14 +10,20 @@ interface UserData {
     roles: string[];
 }
 
+// Corrected AuthResponse interface based on actual API response structure
 interface AuthResponse {
     access_token: string;
     refresh_token: string;
-    user: UserData;
+    userId: string; // User data fields are at the top level
+    name: string;
+    email: string;
+    phoneNumber: string;
+    roles: string[];
+    // Remove 'user: UserData;' as it's not nested
 }
 
 // Constants
-const API_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:7353';
+    const API_URL = import.meta.env.VITE_REACT_APP_BASE_URL || 'http://localhost:5131';
 const AUTH_ENDPOINTS = {
   LOGIN: '/api/auth/login',
   REFRESH_TOKEN: '/api/auth/refresh-token',
@@ -78,9 +80,16 @@ class AuthService {
         username,
         password
       });
-
+      console.log(response.data);
       this.setUserData(response.data);
-      return response.data.user;
+      const userData: UserData = {
+          userId: response.data.userId,
+          name: response.data.name,
+          email: response.data.email,
+          phoneNumber: response.data.phoneNumber,
+          roles: response.data.roles,
+      };
+      return userData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -163,19 +172,34 @@ class AuthService {
     try {
       const refreshToken = this.getRefreshToken();
       if (refreshToken) {
-        await this.axiosInstance.post(AUTH_ENDPOINTS.LOGOUT, {
-          refresh_token: refreshToken
-        });
+        // Optionally call backend logout endpoint if needed
+        await this.axiosInstance.post(AUTH_ENDPOINTS.LOGOUT, { refresh_token: refreshToken });
+        // Note: The backend logout endpoint might also invalidate the refresh token server-side
       }
+    } catch (error) {
+      // Handle potential errors during logout API call, but still proceed to clear data
+      console.error("Error during logout API call:", error);
     } finally {
-      this.clearUserData();
+      this.clearUserData(); 
+      window.location.reload();
     }
   }
 
   // Get current user
   getCurrentUser(): UserData | null {
+    console.log(Cookies.get(COOKIE_NAMES.USER_DATA));
     const userData = Cookies.get(COOKIE_NAMES.USER_DATA);
-    return userData ? JSON.parse(userData) : null;
+    
+    if (typeof userData !== 'string' || userData === 'undefined') {
+      return null;
+    }
+    try {
+      return JSON.parse(userData);
+    } catch (e) {
+      console.error("Failed to parse user data from cookie:", e);
+      this.clearUserData();
+      return null;
+    }
   }
 
   // Get access token
@@ -188,15 +212,24 @@ class AuthService {
     return Cookies.get(COOKIE_NAMES.REFRESH_TOKEN);
   }
 
-  // Set user data in cookies
+  // Set user data in cookies - now correctly processes data from top level
   private setUserData(data: AuthResponse): void {
     const userDataExpiry = new Date(new Date().getTime() + EXPIRATION_TIMES.USER_DATA);
     const tokenExpiry = new Date(new Date().getTime() + EXPIRATION_TIMES.ACCESS_TOKEN);
-    const refreshTokenExpiry = new Date(new Date().getTime() + EXPIRATION_TIMES.REFRESH_TOKEN); 
-    
-    Cookies.set(COOKIE_NAMES.USER_DATA, JSON.stringify(data.user), { expires: userDataExpiry });
+    const refreshTokenExpiry = new Date(new Date().getTime() + EXPIRATION_TIMES.REFRESH_TOKEN);
+
+    // Extract user specific data and save it as a UserData object in the cookie
+    const userToSave: UserData = {
+        userId: data.userId,
+        name: data.name,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        roles: data.roles,
+    };
+
+    Cookies.set(COOKIE_NAMES.USER_DATA, JSON.stringify(userToSave), { expires: userDataExpiry });
     Cookies.set(COOKIE_NAMES.ACCESS_TOKEN, data.access_token, { expires: tokenExpiry });
-    Cookies.set(COOKIE_NAMES.REFRESH_TOKEN, data.refresh_token, { expires: refreshTokenExpiry }); // Thêm dòng này
+    Cookies.set(COOKIE_NAMES.REFRESH_TOKEN, data.refresh_token, { expires: refreshTokenExpiry });
   }
 
   // Clear user data from cookies
@@ -206,12 +239,16 @@ class AuthService {
     Cookies.remove(COOKIE_NAMES.REFRESH_TOKEN);
   }
 
-  // Error handler
+  // Handle API errors
   private handleError(error: any): Error {
-    if (axios.isAxiosError(error)) {
-      return new Error(error.response?.data?.message || 'An error occurred');
+    // Customize error handling based on your API response structure
+    if (error.response && error.response.data && error.response.data.message) {
+      return new Error(error.response.data.message);
+    } else if (error.message) {
+      return new Error(error.message);
+    } else {
+      return new Error('An unknown error occurred.');
     }
-    return error;
   }
 }
 
