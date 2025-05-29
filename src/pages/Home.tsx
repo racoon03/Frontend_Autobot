@@ -79,7 +79,7 @@ const FeatureCarousel = () => {
 const HomePage = () => {
   return (
     <div className="font-sans">
-      {/* Header Section */}
+      
       <header className="bg-[#0D1A3D] text-white py-20 text-center">
         <h1 className="text-4xl md:text-5xl font-extrabold mb-4">HIỆU SUẤT ĐẦU TƯ CAO</h1>
         <p className="text-xl mb-6">Tự động báo điểm mua bán phái sinh</p>
@@ -89,21 +89,21 @@ const HomePage = () => {
         </div>
       </header>
 
-      {/* Feature Carousel Section */}
+      
       <FeatureCarousel />
 
-      {/* Pricing Section */}
+      
       <section className="bg-[#0D1A3D] py-16 text-center">
-        <div className="container mx-auto px-4"> {/* Thêm container để kiểm soát chiều rộng */}
+        <div className="container mx-auto px-4"> 
           <h2 className="text-white md:text-4xl font-bold text-green-700 mb-10">Bảng giá dịch vụ</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 justify-items-center"> {/* Responsive grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 justify-items-center"> 
             {[
               { name: 'Gói 1 tháng', price: '2.700.000 VND' },
               { name: 'Gói 3 tháng', price: '7.200.000 VND' },
               { name: 'Gói 6 tháng', price: '12.600.000 VND' },
               { name: 'Gói 12 tháng', price: '21.600.000 VND' },
             ].map((pkg, idx) => (
-              <Card key={idx} className="rounded-2xl shadow-lg w-full max-w-xs"> {/* Giới hạn chiều rộng tối đa */}
+              <Card key={idx} className="rounded-2xl shadow-lg w-full max-w-xs"> 
                 <div className="text-center p-4">
                   <img src="src/assets/iconbot.png" alt="bot" className="w-32 h-32 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold mb-2">{pkg.name}</h3>
