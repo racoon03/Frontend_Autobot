@@ -32,7 +32,14 @@ const Register: React.FC = () => {
       } catch (error: any) {
         console.error('Error sending verification code:', error);
         if (antMessage) {
-          antMessage.error(error.message || 'Gửi mã xác nhận thất bại.');
+          const errorMessage = error.message || 'Gửi mã xác nhận thất bại.';
+          const lowerCaseError = errorMessage.toLowerCase();
+
+          if (lowerCaseError.includes('duplicate email') || lowerCaseError.includes('already taken') || lowerCaseError.includes('đã tồn tại')) {
+            antMessage.error(errorMessage + '. Vui lòng kiểm tra lại thông tin.');
+          } else {
+            antMessage.error(errorMessage);
+          }
         }
       } finally {
         setIsSubmitting(false);
@@ -62,7 +69,17 @@ const Register: React.FC = () => {
       } catch (error: any) {
         console.error('Error verifying code or finalizing registration:', error);
         if (antMessage) {
-          antMessage.error(error.message || 'Xác nhận mã thất bại.');
+          const errorMessage = error.message || 'Xác nhận mã thất bại.';
+          const lowerCaseError = errorMessage.toLowerCase();
+
+          if (lowerCaseError.includes('duplicate email') || lowerCaseError.includes('already taken') || lowerCaseError.includes('đã tồn tại')) {
+            antMessage.error(errorMessage + '. Vui lòng kiểm tra lại thông tin và thử lại.');
+            setShowVerificationField(false);
+            form.resetFields();
+            setInitialRegisterValues(null);
+          } else {
+            antMessage.error(errorMessage);
+          }
         }
       } finally {
         setIsSubmitting(false);

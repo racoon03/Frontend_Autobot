@@ -9,6 +9,7 @@ import { initialState, reducer } from './services/authReducer';
 import type { AuthState } from './services/authReducer';
 import { authService } from './services/authService';
 import { LOGIN_SUCCESS, LOGOUT } from './services/authActions';
+import { ErrorMessage } from './services/authService';
 
 interface AuthContextType {
   state: AuthState;
@@ -43,39 +44,46 @@ function App() {
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout | undefined;
+    console.log("[Auth Effect] Authentication state changed:", state.isAuthenticated);
 
     if (state.isAuthenticated) {
-      /*
-      authService.refreshToken()
-        .then(() => { console.log("Token refreshed successfully"); })
-        .catch((error: any) => { console.error("Error refreshing token on auth state change:", error); dispatch({ type: LOGOUT }); });
-      */
-
+      console.log("[Auth Effect] Setting up refresh token interval");
       intervalId = setInterval(
-        () => {
+        async () => {
+          console.log("[Auth Effect] Interval triggered - checking user");
           if (authService.getCurrentUser()) {
-            authService
-              .refreshToken()
-              .then(() => {
-                console.log("Token refreshed successfully in interval");
-              })
-              .catch((error: any) => {
-                console.error("Error refreshing token in interval:", error);
+            try {
+              await authService.refreshToken();
+              console.log("[Auth Effect] Token refresh completed successfully");
+            } catch (error: any) {
+              console.error("[Auth Effect] Error refreshing token in interval:", error);
+
+              if (error.message === 'No refresh token available' || error.response?.status === 401 || error.message.includes(ErrorMessage.INVALID_TOKEN)) {
+                console.log("[Auth Effect] Critical error detected, logging out and showing message");
                 dispatch({ type: LOGOUT });
-              });
+                antMessage?.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+              } else {
+                 console.log("[Auth Effect] Non-critical error during refresh.");
+              }
+            }
           } else {
+            console.log("[Auth Effect] No current user found, clearing interval");
             if (intervalId) clearInterval(intervalId);
           }
         },
-        300000,
+        240000, // Refresh every 4 minutes
       );
+      console.log("[Auth Effect] Interval set up with ID:", intervalId);
     } else {
+      console.log("[Auth Effect] User not authenticated, clearing interval if exists");
       if (intervalId) clearInterval(intervalId);
     }
 
-    return () => { if (intervalId) clearInterval(intervalId); };
-
-  }, [state.isAuthenticated]);
+    return () => {
+      console.log("[Auth Effect] Cleanup - clearing interval");
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [state.isAuthenticated, dispatch, antMessage]); // Added dispatch and antMessage to dependencies
 
   return (  
     <MessageContext.Provider value={antMessage}>
