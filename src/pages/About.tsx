@@ -1,13 +1,52 @@
 import { Card, Table, Empty } from "antd";
+import { useEffect, useState } from 'react';
+import { botTradingService, type BotTrading } from '../services/botService';
 
 
 export default function About() {
+  const [botTradings, setBotTradings] = useState<BotTrading[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBotTradings = async () => {
+      console.log("Fetching bot tradings...");
+      try {
+        const data = await botTradingService.getAllBotTradings();
+        console.log("Successfully fetched bot tradings:", data);
+        setBotTradings(data);
+      } catch (error) {
+        console.error("Error fetching bot tradings:", error);
+        // Handle error appropriately, e.g., show an error message
+      } finally {
+        setLoading(false);
+        console.log("Finished fetching bot tradings.");
+      }
+    };
+
+    fetchBotTradings();
+  }, []); // Empty dependency array means this effect runs once on mount
 
   const columns = [
-    { title: 'Tên Bot',},
-    { title: 'Số lệnh',},
-    { title: 'Lợi Nhuận', },
-    { title: 'Tỉ lệ thắng',},
+    {
+      title: 'Tên Bot',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Số lệnh',
+      dataIndex: 'commandNumber',
+      key: 'commandNumber',
+    },
+    {
+      title: 'Lợi Nhuận',
+      dataIndex: 'profit',
+      key: 'profit',
+    },
+    {
+      title: 'Tỉ lệ thắng',
+      dataIndex: 'winRate',
+      key: 'winRate',
+    },
   ];
 
   return (
@@ -107,15 +146,16 @@ export default function About() {
 
       <div className="mx-8">
         <h2 className="text-2xl text-center font-bold text-center text-black mb-6 mt-24">
-          Danh sách giao dịch
+          DANH SÁCH BOT
         </h2>
         <Table className = "bg-gray-200 text-center"
           columns={columns}
-          dataSource={[]} 
+          dataSource={botTradings} 
+          loading={loading}
           locale={{
             emptyText: (
               <Empty
-                description="No Data"
+                description="Không có dữ liệu Bot"
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               />
             ),
