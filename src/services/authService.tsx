@@ -23,7 +23,8 @@ interface AuthResponse {
 }
 
 // Constants
-    const API_URL = import.meta.env.VITE_REACT_APP_BASE_URL || 'http://localhost:5131';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5131';
 const AUTH_ENDPOINTS = {
   LOGIN: '/api/auth/login',
   REFRESH_TOKEN: '/api/auth/refresh-token',
@@ -51,13 +52,12 @@ const EXPIRATION_TIMES = {
 
 // Define frontend-friendly error messages if needed, matching backend or for display
 export const ErrorMessage = {
-  INVALID_TOKEN: 'INVALID_TOKEN', // Assuming this is the string value from backend
-  USER_NOT_FOUND: 'USER_NOT_FOUND', // Add other relevant messages as needed
-  SERVICE_EXPIRE: 'SERVICE_EXPIRE' // Based on backend code
-  // Add any other backend error messages you might check for
+  INVALID_TOKEN: 'INVALID_TOKEN', 
+  USER_NOT_FOUND: 'USER_NOT_FOUND', 
+  SERVICE_EXPIRE: 'SERVICE_EXPIRE' 
 };
 
-class AuthService {
+export class AuthService {
   private axiosInstance: AxiosInstance;
 
   constructor() {
