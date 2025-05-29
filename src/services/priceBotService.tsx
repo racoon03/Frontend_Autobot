@@ -9,7 +9,7 @@ import axios from 'axios';
         description: string;
     }
 
-  const API_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5131' + '/api/priceBot';
+const API_URL = import.meta.env.VITE_API_URL + '/api/priceBot';
   
   class PriceBotService {
     async getAllPriceBots(): Promise<PriceBot[]> {
