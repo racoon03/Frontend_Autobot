@@ -49,6 +49,14 @@ const EXPIRATION_TIMES = {
   REFRESH_TOKEN: 24 * 60 * 60 * 1000
 };
 
+// Define frontend-friendly error messages if needed, matching backend or for display
+export const ErrorMessage = {
+  INVALID_TOKEN: 'INVALID_TOKEN', // Assuming this is the string value from backend
+  USER_NOT_FOUND: 'USER_NOT_FOUND', // Add other relevant messages as needed
+  SERVICE_EXPIRE: 'SERVICE_EXPIRE' // Based on backend code
+  // Add any other backend error messages you might check for
+};
+
 class AuthService {
   private axiosInstance: AxiosInstance;
 
@@ -152,17 +160,29 @@ class AuthService {
   // Refresh Token
   async refreshToken(): Promise<void> {
     try {
+      console.log("[Refresh Token] Starting refresh token process");
       const refreshToken = this.getRefreshToken();
+      console.log("[Refresh Token] Current refresh token exists:", !!refreshToken);
+      
       if (!refreshToken) {
+        console.error("[Refresh Token] No refresh token available");
         throw new Error('No refresh token available');
       }
 
+      console.log("[Refresh Token] Calling refresh token API");
       const response = await this.axiosInstance.post<AuthResponse>(AUTH_ENDPOINTS.REFRESH_TOKEN, {
         refresh_token: refreshToken
       });
+      console.log("[Refresh Token] API response received:", {
+        hasAccessToken: !!response.data.access_token,
+        hasRefreshToken: !!response.data.refresh_token,
+        userId: response.data.userId
+      });
 
       this.setUserData(response.data);
+      console.log("[Refresh Token] New tokens set in cookies");
     } catch (error) {
+      console.error("[Refresh Token] Error during refresh:", error);
       throw this.handleError(error);
     }
   }
@@ -214,22 +234,50 @@ class AuthService {
 
   // Set user data in cookies - now correctly processes data from top level
   private setUserData(data: AuthResponse): void {
+    console.log("[Set User Data] Setting new user data and tokens", data);
     const userDataExpiry = new Date(new Date().getTime() + EXPIRATION_TIMES.USER_DATA);
     const tokenExpiry = new Date(new Date().getTime() + EXPIRATION_TIMES.ACCESS_TOKEN);
     const refreshTokenExpiry = new Date(new Date().getTime() + EXPIRATION_TIMES.REFRESH_TOKEN);
 
     // Extract user specific data and save it as a UserData object in the cookie
-    const userToSave: UserData = {
-        userId: data.userId,
-        name: data.name,
-        email: data.email,
-        phoneNumber: data.phoneNumber,
-        roles: data.roles,
-    };
+    // Only set user data if it's available in the response
+    if (data.userId) {
+      const userToSave: UserData = {
+          userId: data.userId,
+          name: data.name,
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          roles: data.roles,
+      };
+      Cookies.set(COOKIE_NAMES.USER_DATA, JSON.stringify(userToSave), { expires: userDataExpiry });
+      console.log("[Set User Data] User data cookie set");
+    } else {
+      console.log("[Set User Data] User data not in response, keeping existing or leaving unset");
+    }
 
-    Cookies.set(COOKIE_NAMES.USER_DATA, JSON.stringify(userToSave), { expires: userDataExpiry });
-    Cookies.set(COOKIE_NAMES.ACCESS_TOKEN, data.access_token, { expires: tokenExpiry });
-    Cookies.set(COOKIE_NAMES.REFRESH_TOKEN, data.refresh_token, { expires: refreshTokenExpiry });
+    // Only set access token if it's available in the response
+    if (data.access_token) {
+      Cookies.set(COOKIE_NAMES.ACCESS_TOKEN, data.access_token, { expires: tokenExpiry });
+      console.log("[Set User Data] Access token cookie set");
+    } else {
+       console.log("[Set User Data] Access token not in response, keeping existing or leaving unset");
+    }
+
+    // Only set refresh token if it's available in the response - Backend currently doesn't return refresh token on refresh
+    if (data.refresh_token) {
+      Cookies.set(COOKIE_NAMES.REFRESH_TOKEN, data.refresh_token, { expires: refreshTokenExpiry });
+       console.log("[Set User Data] Refresh token cookie set");
+    } else {
+      console.log("[Set User Data] Refresh token not in response, keeping existing");
+      // We are *not* removing the refresh token if it's not in the response
+    }
+
+
+    console.log("[Set User Data] Cookie expiration times used:", {
+      userData: userDataExpiry,
+      accessToken: tokenExpiry,
+      refreshToken: refreshTokenExpiry // Note: This is the expiry for a *new* token, not the existing one if it wasn't updated
+    });
   }
 
   // Clear user data from cookies
@@ -242,11 +290,22 @@ class AuthService {
   // Handle API errors
   private handleError(error: any): Error {
     // Customize error handling based on your API response structure
-    if (error.response && error.response.data && error.response.data.message) {
-      return new Error(error.response.data.message);
+    if (error.response) {
+      // Check if the response data is a string (like for 400 BadRequest with simple error message)
+      if (typeof error.response.data === 'string') {
+        return new Error(error.response.data); // Use the string as the error message
+      }
+      // Check for nested message property (for other error structures)
+      if (error.response.data && error.response.data.message) {
+        return new Error(error.response.data.message);
+      }
+      // Fallback for response errors without a recognized structure
+      return new Error(`Server responded with status ${error.response.status}`);
     } else if (error.message) {
+      // Handle request errors (e.g., network issues)
       return new Error(error.message);
     } else {
+      // Handle other unknown errors
       return new Error('An unknown error occurred.');
     }
   }
