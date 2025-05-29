@@ -56,7 +56,8 @@ function ServiceRates() {
       style={{ backgroundImage: "url('/src/assets/service_rates_background2.jpg')" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-center mb-14">GÓI DỊCH VỤ</h2>
+        <h2 className="text-3xl font-bold text-center mb-14" style={{ color: '#e0f2f7', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>GÓI DỊCH VỤ</h2>
+
         {loading ? (
           <p className="text-center text-black">Đang tải dữ liệu giá bot...</p>
         ) : Object.keys(groupedPriceBots).length === 0 ? (
@@ -69,7 +70,13 @@ function ServiceRates() {
 
             return (
               <div key={botId} className="mb-10">
-                <h3 className="text-2xl font-bold text-center text-black mb-6">{`Giá dịch vụ: ${botName}`}</h3>
+                <h3
+                  className="text-2xl font-bold text-center text-black mb-6 pb-2 border-b-2 border-blue-500"
+                  style={{ color: '#1a237e' }}
+                >
+                  {`Giá dịch vụ: ${botName}`}
+                </h3>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
                   {botPrices.map((priceBot, index) => (
                     <div
