@@ -1,39 +1,102 @@
-import React, { useState } from 'react';
-import { Select, DatePicker, Table } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Select, DatePicker, Table, message } from 'antd';
 import moment from 'moment';
+import LogHistoryService from '../services/logHistoryService';
+import type { LogHistory } from '../services/logHistoryService';
+import { authService } from '../services/authService';
 
 const { Option } = Select;
 
 const LogHistory: React.FC = () => {
-  const [filterType, setFilterType] = useState('all'); // 'all', 'year', 'month', 'day'
+  const [filterType, setFilterType] = useState('all');
   const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [countSL, setCountSL] = useState<number>(0);
 
-  const handleFilterChange = (value: string) => {
-    setFilterType(value);
-    setSelectedDate(null); // Reset date when filter type changes
-  };
-
-  const handleDateChange = (date: moment.Moment | null) => {
-    setSelectedDate(date);
-    // Here you would typically fetch data based on the selected date and filterType
-    console.log('Selected date:', date ? date.format() : 'none', 'Filter type:', filterType);
-  };
-
-  // Placeholder data for the table (replace with actual data fetching later)
   const columns = [
     { title: 'THỜI GIAN', dataIndex: 'time', key: 'time' },
     { title: 'LOẠI LỆNH', dataIndex: 'type', key: 'type' },
     { title: 'GIÁ CHỐT', dataIndex: 'closePrice', key: 'closePrice' },
     { title: 'SL', dataIndex: 'sl', key: 'sl' },
     { title: 'SỐ HỢP ĐỒNG', dataIndex: 'contract', key: 'contract' },
-    { title: 'GIÁ KHỚP', dataIndex: 'Price', key: 'matchPrice' },
+    { title: 'GIÁ KHỚP', dataIndex: 'matchPrice', key: 'matchPrice' },
     { title: 'LỢI NHUẬN', dataIndex: 'profit', key: 'profit' },
   ];
 
-  const data = [
-    { key: '1', time: '10/07/2024 14:30:53', type: 'SHORT', closePrice: 1324.2, sl: '-', contract: 1324.2, matchPrice: 100.000, profit: 300.000 },
-    { key: '2', time: '10/07/2024 14:30:53', type: 'SHORT', closePrice: 1324.2, sl: '-', contract: 1324.2, matchPrice: 100.000, profit: 300.000 },
-  ];
+  const mapToFrontend = (logsFromBackend: LogHistory[]): any[] => {
+    return logsFromBackend.map(log => ({
+      key: log.id,
+      time: new Date(log.dateTime).toLocaleString(),
+      type: log.signal,
+      closePrice: log.profitPointTP,
+      sl: log.isSL ? '✔' : '',
+      contract: log.numberContract,
+      matchPrice: log.priceBuy,
+      profit: log.profit,
+    }));
+  };
+
+  const fetchLogs = async () => {
+    try {
+      const user = authService.getCurrentUser();
+      if (!user) {
+        return message.error('Vui lòng đăng nhập lại');
+      }
+
+      let res;
+
+      if (filterType === 'all') {
+        res = await LogHistoryService.getAll();
+        setLogs(mapToFrontend(res.logHistory));
+      } else if (selectedDate) {
+        const year = selectedDate.year();
+        const month = selectedDate.month() + 1;
+        const day = selectedDate.date();
+
+        switch (filterType) {
+          case 'year':
+            res = await LogHistoryService.getByYear(year, user.userId);
+            break;
+          case 'month':
+            res = await LogHistoryService.getByMonth(month, year, user.userId);
+            break;
+          case 'day':
+            res = await LogHistoryService.getByDay(day, month, year, user.userId);
+            break;
+          default:
+            return;
+        }
+
+        setLogs(mapToFrontend(res.logHistoryList));
+      } else {
+        return message.warning('Vui lòng chọn ngày/tháng/năm trước khi lọc');
+      }
+
+      setCountSL(res.countSL ?? 0);
+    } catch (err) {
+      message.error('Không thể tải dữ liệu lịch sử');
+    }
+  };
+
+  useEffect(() => {
+    if (filterType === 'all') {
+      fetchLogs();
+    } else if (selectedDate) {
+      fetchLogs();
+    } else {
+      setLogs([]);
+      setCountSL(0);
+    }
+  }, [filterType, selectedDate]);
+
+  const handleFilterChange = (value: string) => {
+    setFilterType(value);
+    setSelectedDate(null);
+  };
+
+  const handleDateChange = (date: moment.Moment | null) => {
+    setSelectedDate(date);
+  };
 
   return (
     <div style={{ padding: '20px' }}>
@@ -58,9 +121,11 @@ const LogHistory: React.FC = () => {
         )}
       </div>
 
-      <Table columns={columns} dataSource={data} pagination={false} /> {/* Add pagination as needed */}
+      <p style={{ marginBottom: '12px', color: '#fff' }}>Số lệnh Stop Loss: {countSL}</p>
+
+      <Table columns={columns} dataSource={logs} pagination={false} />
     </div>
   );
 };
 
-export default LogHistory; 
+export default LogHistory;
