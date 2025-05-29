@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5131';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5131';
 
 export interface PaymentRequest {
     userId: string;
@@ -14,7 +14,6 @@ export interface PaymentResponse {
     checkoutUrl: string;
 }
 
-// Service class
 export class PaymentService {
     private baseUrl: string;
 
