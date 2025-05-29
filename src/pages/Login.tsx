@@ -1,6 +1,6 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Form, Input } from 'antd';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { useMessage, useAuth } from '../App';
@@ -10,6 +10,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const antMessage = useMessage();
   const auth = useAuth();
+  const [form] = Form.useForm();
 
   if (!auth) {
     console.error("Auth context not available in Login page.");
@@ -20,6 +21,17 @@ const Login: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    // Check for remembered phone number in local storage
+    const rememberedPhone = localStorage.getItem('rememberedPhone');
+    if (rememberedPhone) {
+      form.setFieldsValue({
+        phone: rememberedPhone,
+        remember: true, // Also check the remember me box
+      });
+    }
+  }, [form]); // Add form to dependency array
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onFinish = async (values: any) => {
     setIsSubmitting(true);
@@ -27,6 +39,13 @@ const Login: React.FC = () => {
       const userData = await authService.login(values.phone, values.password);
 
       dispatch({ type: LOGIN_SUCCESS, payload: { user: userData } });
+
+      // Handle remember me
+      if (values.remember) {
+        localStorage.setItem('rememberedPhone', values.phone);
+      } else {
+        localStorage.removeItem('rememberedPhone');
+      }
 
       if (antMessage) {
         antMessage.success('Đăng nhập thành công!');
@@ -109,7 +128,7 @@ const Login: React.FC = () => {
             Chào mừng bạn đến với Tradingbot
           </p>
 
-          <Form layout="vertical" onFinish={onFinish} initialValues={{ remember: true }}>
+          <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ remember: true }}>
             <Form.Item
               name="phone"
               rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
