@@ -1,53 +1,52 @@
-import { Card, Table, Empty } from "antd";
-import { useEffect, useState } from 'react';
-import { botTradingService, type BotTrading } from '../services/botService';
+import { Card, Table } from "antd";
+import { Link } from "react-router-dom";
 
 
 export default function About() {
-  const [botTradings, setBotTradings] = useState<BotTrading[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  const dataSource = [
+  {
+    key: '1', 
+    tenBot: 'Bot VIP',
+    soLenh: 24,
+    loiNhuan: '500',
+    tiLeThang: '95%'
+  },
+  {
+    key: '2',
+    tenBot: 'Bot Thường',
+    soLenh: 18,
+    loiNhuan: '280',
+    tiLeThang: '70%'
+  },
 
-  useEffect(() => {
-    const fetchBotTradings = async () => {
-      console.log("Fetching bot tradings...");
-      try {
-        const data = await botTradingService.getAllBotTradings();
-        console.log("Successfully fetched bot tradings:", data);
-        setBotTradings(data);
-      } catch (error) {
-        console.error("Error fetching bot tradings:", error);
-        // Handle error appropriately, e.g., show an error message
-      } finally {
-        setLoading(false);
-        console.log("Finished fetching bot tradings.");
-      }
-    };
-
-    fetchBotTradings();
-  }, []); // Empty dependency array means this effect runs once on mount
+];
 
   const columns = [
-    {
-      title: 'Tên Bot',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Số lệnh',
-      dataIndex: 'commandNumber',
-      key: 'commandNumber',
-    },
-    {
-      title: 'Lợi Nhuận',
-      dataIndex: 'profit',
-      key: 'profit',
-    },
-    {
-      title: 'Tỉ lệ thắng',
-      dataIndex: 'winRate',
-      key: 'winRate',
-    },
-  ];
+  { 
+    title: 'Tên Bot',
+    dataIndex: 'tenBot', 
+    key: 'tenBot'
+  },
+  { 
+    title: 'Số lệnh',
+    dataIndex: 'soLenh',
+    key: 'soLenh'
+  },
+  { 
+    title: 'Lợi Nhuận',
+    dataIndex: 'loiNhuan',
+    key: 'loiNhuan'
+  },
+  { 
+    title: 'Tỉ lệ thắng',
+    dataIndex: 'tiLeThang',
+    key: 'tiLeThang'
+  },
+];
+
+
+
 
   return (
     <div className="text-white font-sans">
@@ -67,7 +66,7 @@ export default function About() {
       </h2>
 
         {/* block 1 */}
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 container mx-auto px-4 md:px-20 lg:px-40 transition-transform duration-500 hover:scale-105">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 container mx-auto px-4 py-12 md:px-20 lg:px-40 transition-transform duration-500 hover:scale-105">
           <img
             src="src/assets/info6.png"
             alt="Block 1"
@@ -86,7 +85,7 @@ export default function About() {
         </div>
 
         {/* block 2 */}
-        <div className="flex flex-col md:flex-row-reverse items-center md:items-start gap-6 container mx-auto px-4 md:px-20 lg:px-40">
+        <div className="flex flex-col md:flex-row-reverse items-center md:items-start gap-6 container mx-auto px-4 py-12 md:px-20 lg:px-40 transition-transform duration-500 hover:scale-105">
           <img
             src="src/assets/info1.png"
             alt="Block 2"
@@ -105,7 +104,7 @@ export default function About() {
         </div>
 
               {/* block 3 */}
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 container mx-auto px-4 md:px-20 lg:px-40">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 container mx-auto px-4 py-12 md:px-20 lg:px-40 transition-transform duration-500 hover:scale-105">
           <img
             src="src/assets/info.png"
             alt="Block 3"
@@ -124,7 +123,7 @@ export default function About() {
         </div>
 
               {/* block 4 */}
-        <div className="flex flex-col md:flex-row-reverse items-center md:items-start gap-6 container mx-auto px-4 md:px-20 lg:px-40">
+        <div className="flex flex-col md:flex-row-reverse items-center md:items-start gap-6 container mx-auto px-4 py-12 md:px-20 lg:px-40 transition-transform duration-500 hover:scale-105">
           <img
             src="src/assets/info3.png"
             alt="Block 4"
@@ -144,26 +143,49 @@ export default function About() {
 
       </div>
 
-      <div className="mx-8">
-        <h2 className="text-2xl text-center font-bold text-center text-black mb-6 mt-24">
-          DANH SÁCH BOT
-        </h2>
-        <Table className = "bg-gray-200 text-center"
+        <div className="mx-8 items-center">
+          <h2 className="text-2xl text-center font-bold text-center text-black mb-6 mt-24">
+            Thông Số Lệnh Bot
+          </h2>
+          <Table
           columns={columns}
-          dataSource={botTradings} 
-          loading={loading}
-          locale={{
-            emptyText: (
-              <Empty
-                description="Không có dữ liệu Bot"
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-              />
-            ),
+          dataSource={dataSource}
+          components={{
+            header: {
+              cell: (props) => (
+                <th 
+                  {...props} 
+                  style={{ 
+                    textAlign: 'center',
+                    padding: '12px 8px'
+                  }} 
+                />
+              ),
+            },
+            body: {
+              cell: (props) => (
+                <td 
+                  {...props} 
+                  style={{ 
+                    textAlign: 'center',
+                    padding: '12px 8px'
+                  }} 
+                />
+              ),
+            },
           }}
           bordered
-        />
-        </div>
+          />
+          </div>
       </div>
-    </div>
+        <div className="w-full flex justify-center mb-12">
+          <Link to="/register">
+            <button className="mt-6 px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white font-medium">
+              Đăng Ký Ngay
+            </button>
+          </Link>
+        </div>
+  </div>
+    
   );
 }
