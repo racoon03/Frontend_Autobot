@@ -1,4 +1,5 @@
 import { Card, Table } from "antd";
+import { Link } from "react-router-dom";
 
 
 export default function About() {
@@ -178,9 +179,11 @@ export default function About() {
           </div>
       </div>
         <div className="w-full flex justify-center mb-12">
-          <button className="mt-6 px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white font-medium">
-            Đăng Ký Ngay
-          </button>
+          <Link to="/register">
+            <button className="mt-6 px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white font-medium">
+              Đăng Ký Ngay
+            </button>
+          </Link>
         </div>
   </div>
     
