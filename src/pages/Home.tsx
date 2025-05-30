@@ -7,6 +7,7 @@ import { paymentService } from '../services/paymentService';
 import { authService } from '../services/authService';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { priceBotService, type PriceBot } from '../services/priceBotService';
 
 const features = [
   {
@@ -79,55 +80,68 @@ const FeatureCarousel = () => {
 };
 
 
-const packages = [
-  { name: '1 tháng', month: 1, price: '2.700.000 VND' },
-  { name: '3 tháng', month: 3, price: '7.200.000 VND' },
-  { name: '6 tháng', month: 6, price: '12.600.000 VND' },
-  { name: '12 tháng', month: 12, price: '21.600.000 VND' },
-];
-
 const HomePage = () => {
 
   //check login-------------------------------------------------------------------
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [priceBots, setPriceBots] = useState<PriceBot[]>([]);
+  const [loading, setLoading] = useState(true);
 
     useEffect(() => {
       const user = authService.getCurrentUser();
       setIsLoggedIn(!!user);
-    }, []);
 
-  //mua------------------------------------------------------------------------------
-  const handleBuyNow = async (month: number) => {
-    try {
-      const user = authService.getCurrentUser();
-      if (!user) {
-        message.warning("Vui lòng đăng nhập để tiếp tục thanh toán.");
-        return;
-      }
-
-      const request = {
-        userId: user.userId,
-        month,
-        botTradingId: 1,
-        returnUrl: window.location.origin + "/success",
-        cancelUrl: window.location.origin + "/cancel",
+  const fetchPriceBots = async () => {
+        try {
+          const data = await priceBotService.getAllPriceBots(); console.log(data);
+          setPriceBots(data);
+        } catch (error) {
+          console.error("Error fetching price bots:", error);
+          message.error("Không thể tải dữ liệu gói dịch vụ");
+        } finally {
+          setLoading(false);
+        }
       };
 
-      console.log('Creating payment with request:', request);
-      const response = await paymentService.createPaymentLink(request);
-      console.log('Payment response:', response);
+    fetchPriceBots();
+  }, []);
 
-      if (response.checkoutUrl) {
-        window.location.href = response.checkoutUrl;
-      }
-    } catch (error: any) {
-      console.error('Payment error response:', error.response);
-      const msg = error.response?.data?.message 
-                || error.message 
-                || 'Đã xảy ra lỗi khi thanh toán';
-      message.error(msg);
+
+  const handleBuyNow = async (month: number, botTradingId: number) => {
+  try {
+    // 1. Kiểm tra xem người dùng đã đăng nhập chưa
+    const user = authService.getCurrentUser();
+    if (!user) {
+      message.warning("Vui lòng đăng nhập để tiếp tục thanh toán.");
+      return;
     }
-  };
+
+    // 2. Chuẩn bị dữ liệu yêu cầu để tạo link thanh toán
+    const request = {
+      userId: user.userId,
+      month: month,
+      botTradingId: botTradingId,
+      returnUrl: `${window.location.origin}/success`, // URL khi thanh toán thành công
+      cancelUrl: `${window.location.origin}/cancel`,   // URL khi hủy thanh toán
+    };
+    // 3. Gọi API để tạo link thanh toáns
+    const response = await paymentService.createPaymentLink(request);
+    console.log(response);
+    // 4. Chuyển hướng người dùng đếns trang thanh toán
+    if (response) {
+      // Mở link thanh toán trong một tab mới
+      window.open(response.data, "_blank");
+    } else {
+      message.error("Không nhận được liên kết thanh toán từ máy chủ.");
+    }
+  } catch (error: any) {
+    // 5. Xử lý lỗi nếu có
+    const errorMessage = error.response?.data?.message || error.message || 'Đã xảy ra lỗi khi tạo liên kết thanh toán.';
+    message.error(errorMessage);
+    console.error('Lỗi khi thanh toán:', error);
+  }
+};
+  
 
 
   return (
@@ -156,32 +170,47 @@ const HomePage = () => {
       
       <FeatureCarousel />
 
-      
-      <section className="bg-[#0D1A3D] py-16 text-center">
+            <section className="bg-[#0D1A3D] py-16 text-center">
         <div className="container mx-auto px-4"> 
           <h2 className="text-white md:text-4xl font-bold text-green-700 mb-10">Bảng giá dịch vụ</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 justify-items-center"> 
-            {packages.map((pkg, idx) => (
-              <Card key={idx} className="rounded-2xl shadow-lg w-full max-w-xs"> 
-                <div className="text-center p-4">
-                  <img src="src/assets/iconbot.png" alt="bot" className="w-32 h-32 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">{pkg.name}</h3>
-                  <p className="text-lg font-bold text-green-700 mb-4">{pkg.price}</p>
-                  {isLoggedIn && (
-                    <Button 
-                      type="primary" 
-                      className="bg-[#22D3EE]"
-                      onClick={() => handleBuyNow(pkg.month)}
-                    >
-                      Mua ngay
-                    </Button>
-                  )}
-                </div>
-              </Card>
-            ))}
-          </div>
+          
+          {loading ? (
+            <p className="text-center text-white">Đang tải dữ liệu gói dịch vụ...</p>
+          ) : priceBots.length === 0 ? (
+            <p className="text-center text-white">Không có dữ liệu gói dịch vụ.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 justify-items-center">
+              {priceBots.map((pkg, idx) => (
+                <Card key={idx} className="rounded-2xl shadow-lg w-full max-w-xs"> 
+                  <div className="text-center p-4">
+                    <img src="src/assets/iconbot.png" alt="bot" className="w-32 h-32 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">{`${pkg.month} Tháng`}</h3>
+                    <p className="text-lg font-bold text-green-700 mb-4">
+                      {pkg.price.toLocaleString('vi-VN')} VND
+                      {pkg.discount > 0 && (
+                        <span className="ml-2 text-sm text-red-500">{`(Giảm ${pkg.discount}%)`}</span>
+                      )}
+                    </p>
+                    {pkg.description && (
+                      <p className="text-sm text-gray-600 mb-4">{pkg.description}</p>
+                    )}
+                    {isLoggedIn && (
+                      <Button 
+                        type="primary" 
+                        className="bg-[#22D3EE]"
+                        onClick={() => handleBuyNow(pkg.month, pkg.botTradingId)}
+                      >
+                        Mua ngay
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </section>
+
     </div>
   );
 };

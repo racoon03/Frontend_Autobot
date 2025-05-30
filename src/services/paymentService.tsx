@@ -10,9 +10,7 @@ export interface PaymentRequest {
     cancelUrl: string;
 }
 
-export interface PaymentResponse {
-    checkoutUrl: string;
-}
+
 
 export class PaymentService {
     private baseUrl: string;
@@ -22,10 +20,10 @@ export class PaymentService {
     }
 
     // Tạo payment link để thanh toán
-    async createPaymentLink(request: PaymentRequest): Promise<PaymentResponse> {
+    async createPaymentLink(request: PaymentRequest) {
         try {
             const response = await axios.post(`${this.baseUrl}/api/payments/create-payment-link`, request);
-            return response.data;
+            return response;
         } catch (error) {
             throw this.handleError(error);
         }
