@@ -81,6 +81,11 @@ export class AuthService {
     );
   }
 
+  // Public getter for the axios instance
+  public get axios(): AxiosInstance {
+    return this.axiosInstance;
+  }
+
   // Login
   async login(username: string, password: string): Promise<UserData> {
     try {
