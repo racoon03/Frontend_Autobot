@@ -10,16 +10,21 @@ interface UserData {
     roles: string[];
 }
 
-// Corrected AuthResponse interface based on actual API response structure
+// Cập nhật AuthResponse để có thể có hoặc không có token
 interface AuthResponse {
-    access_token: string;
-    refresh_token: string;
-    userId: string; // User data fields are at the top level
+    access_token?: string; // Có thể không có khi đăng nhập admin bước 1
+    refresh_token?: string; // Có thể không có khi đăng nhập admin bước 1
+    userId: string;
     name: string;
     email: string;
     phoneNumber: string;
     roles: string[];
-    // Remove 'user: UserData;' as it's not nested
+}
+
+// Thêm interface cho phản hồi từ API verify admin login (chứa token)
+interface VerifyAdminResponse extends AuthResponse {
+    access_token: string;
+    refresh_token: string;
 }
 
 // Constants
@@ -87,26 +92,71 @@ export class AuthService {
   }
 
   // Login
-  async login(username: string, password: string): Promise<UserData> {
+  // Hàm login giờ đây có thể trả về UserData hoặc null (nếu cần bước xác thực 2 cho admin)
+  async login(username: string, password: string): Promise<UserData | null> {
     try {
       const response = await this.axiosInstance.post<AuthResponse>(AUTH_ENDPOINTS.LOGIN, {
         username,
         password
       });
       console.log(response.data);
-      this.setUserData(response.data);
-      const userData: UserData = {
-          userId: response.data.userId,
-          name: response.data.name,
-          email: response.data.email,
-          phoneNumber: response.data.phoneNumber,
-          roles: response.data.roles,
-      };
-      return userData;
+
+      // Kiểm tra xem phản hồi có token không
+      if (response.data.access_token && response.data.refresh_token) {
+        // Phản hồi có token (user thường hoặc admin đã qua bước 2)
+        this.setUserData(response.data);
+        const userData: UserData = {
+            userId: response.data.userId,
+            name: response.data.name,
+            email: response.data.email,
+            phoneNumber: response.data.phoneNumber,
+            roles: response.data.roles,
+        };
+        return userData;
+      } else if (response.data.userId && response.data.roles) {
+        // Phản hồi không có token nhưng có user info (admin cần xác thực bước 2)
+        // Frontend cần xử lý trường hợp này để hiển thị form nhập mã
+        const userData: UserData = {
+            userId: response.data.userId,
+            name: response.data.name,
+            email: response.data.email,
+            phoneNumber: response.data.phoneNumber,
+            roles: response.data.roles,
+        };
+        // Trả về thông tin user để frontend biết cần xác thực bước 2
+        return userData; // Frontend sẽ nhận object này và biết cần bước 2
+      } else {
+          // Phản hồi không như mong đợi
+          throw new Error('Phản hồi đăng nhập không hợp lệ');
+      }
+
     } catch (error) {
       throw this.handleError(error);
     }
   }
+
+  // Hàm mới để xác thực admin với mã từ email
+  async verifyAdminLogin(userId: string, token: string): Promise<UserData> {
+      try {
+          const response = await this.axiosInstance.post<VerifyAdminResponse>(`${API_URL}/api/auth/verifyLogin`, { // Điều chỉnh endpoint nếu cần
+              userId,
+              token
+          });
+          console.log(response.data);
+          this.setUserData(response.data);
+          const userData: UserData = {
+              userId: response.data.userId,
+              name: response.data.name,
+              email: response.data.email,
+              phoneNumber: response.data.phoneNumber,
+              roles: response.data.roles,
+          };
+          return userData;
+      } catch (error) {
+          throw this.handleError(error);
+      }
+  }
+
   //register
   async register(name: string, email: string, phoneNumber: string, password: string, token: string): Promise<void> {
     try {
@@ -237,8 +287,8 @@ export class AuthService {
     return Cookies.get(COOKIE_NAMES.REFRESH_TOKEN);
   }
 
-  // Set user data in cookies - now correctly processes data from top level
-  private setUserData(data: AuthResponse): void {
+  // Set user data in cookies - giờ có thể nhận AuthResponse hoặc VerifyAdminResponse
+  private setUserData(data: AuthResponse | VerifyAdminResponse): void {
     console.log("[Set User Data] Setting new user data and tokens", data);
     const userDataExpiry = new Date(new Date().getTime() + EXPIRATION_TIMES.USER_DATA);
     const tokenExpiry = new Date(new Date().getTime() + EXPIRATION_TIMES.ACCESS_TOKEN);
@@ -298,13 +348,11 @@ export class AuthService {
     if (error.response) {
       // Check if the response data is a string (like for 400 BadRequest with simple error message)
       if (typeof error.response.data === 'string') {
-        return new Error(error.response.data); // Use the string as the error message
+        return new Error(error.response.data);
       }
-      // Check for nested message property (for other error structures)
       if (error.response.data && error.response.data.message) {
         return new Error(error.response.data.message);
       }
-      // Fallback for response errors without a recognized structure
       return new Error(`Server responded with status ${error.response.status}`);
     } else if (error.message) {
       // Handle request errors (e.g., network issues)
