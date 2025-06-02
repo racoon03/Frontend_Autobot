@@ -16,11 +16,11 @@ import About from '../pages/About';
 import Backtest from '../pages/Backtest';
 import ExtensionPage from '../pages/Download_Extension';
 import ServiceRates from '../pages/Services_Rates';
-import Information from '../pages/Personal_Info';
 import ForgotPassword from '../pages/ForgotPassword';
 
 // Private Pages
 import LogHistory from '../pages/LogHistory';
+import Information from '../pages/Personal_Info';
 
 // Public Routes
 const publicRoutes: RouteType[] = [
