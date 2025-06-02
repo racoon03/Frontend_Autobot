@@ -44,24 +44,17 @@ function App() {
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout | undefined;
-    console.log("[Auth Effect] Authentication state changed:", state.isAuthenticated);
 
     if (state.isAuthenticated) {
-      console.log("[Auth Effect] Setting up refresh token interval");
       intervalId = setInterval(
         async () => {
-          console.log("[Auth Effect] Interval triggered - checking user");
           if (authService.getCurrentUser()) {
             try {
               await authService.refreshToken();
-              console.log("[Auth Effect] Token refresh completed successfully");
             } catch (error: any) {
-              console.error("[Auth Effect] Error refreshing token in interval:", error);
 
               if (error.message === 'No refresh token available' || error.response?.status === 401 || error.message.includes(ErrorMessage.INVALID_TOKEN)) {
-                console.log("[Auth Effect] Critical error detected, logging out and showing message");
                 dispatch({ type: LOGOUT });
-                antMessage?.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
               } else {
                  console.log("[Auth Effect] Non-critical error during refresh.");
               }

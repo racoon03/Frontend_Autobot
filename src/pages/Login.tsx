@@ -10,7 +10,8 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const antMessage = useMessage();
   const auth = useAuth();
-  const [form] = Form.useForm();
+  const [loginForm] = Form.useForm();
+  const [verifyForm] = Form.useForm();
 
   if (!auth) {
     console.error("Auth context not available in Login page.");
@@ -20,25 +21,25 @@ const Login: React.FC = () => {
   const { dispatch } = auth;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showVerificationForm, setShowVerificationForm] = useState(false);
+  const [adminUserId, setAdminUserId] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for remembered phone number in local storage
     const rememberedPhone = localStorage.getItem('rememberedPhone');
     if (rememberedPhone) {
-      form.setFieldsValue({
+      loginForm.setFieldsValue({
         phone: rememberedPhone,
         remember: true, // Also check the remember me box
       });
     }
-  }, [form]); // Add form to dependency array
+  }, [loginForm]); // Add form to dependency array
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onFinish = async (values: any) => {
+  const onFinishLogin = async (values: any) => {
     setIsSubmitting(true);
     try {
       const userData = await authService.login(values.phone, values.password);
-
-      dispatch({ type: LOGIN_SUCCESS, payload: { user: userData } });
 
       // Handle remember me
       if (values.remember) {
@@ -47,10 +48,29 @@ const Login: React.FC = () => {
         localStorage.removeItem('rememberedPhone');
       }
 
-      if (antMessage) {
-        antMessage.success('Đăng nhập thành công!');
+      // Kiểm tra xem phản hồi có chứa thông tin user (userId) hay không
+      if (userData && userData.userId) {
+        // Phản hồi có thông tin user. Bây giờ kiểm tra xem có cần xác thực bước 2 cho admin không.
+        // Điều kiện cần xác thực bước 2 là: user có role 'Admin' VÀ phản hồi không chứa access_token.
+        if (userData.roles.includes('Admin') && (!('access_token' in userData) || !userData.access_token)) {
+           // Đây là admin cần xác thực bước 2
+          setAdminUserId(userData.userId);
+          setShowVerificationForm(true);
+          if (antMessage) {
+              antMessage.info('Vui lòng kiểm tra email để nhận mã xác thực.');
+          }
+        } else {
+          // User thường HOẶC Admin đã xác thực bước 2 (phản hồi có token)
+          dispatch({ type: LOGIN_SUCCESS, payload: { user: userData } });
+          if (antMessage) {
+              antMessage.success('Đăng nhập thành công!');
+          }
+          navigate('/');
+        }
+      } else {
+          // Phản hồi không có thông tin user (userId)
+          throw new Error('Đăng nhập thất bại. Không nhận được thông tin người dùng.');
       }
-      navigate('/');
 
     } catch (error: any) {
       console.error('Login failed:', error);
@@ -59,6 +79,31 @@ const Login: React.FC = () => {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onFinishVerification = async (values: any) => {
+    if (!adminUserId) return; // Đảm bảo có userId admin
+
+    setIsSubmitting(true);
+    try {
+        const userData = await authService.verifyAdminLogin(adminUserId, values.verificationCode);
+
+        // Xác thực admin thành công
+        dispatch({ type: LOGIN_SUCCESS, payload: { user: userData } });
+        if (antMessage) {
+            antMessage.success('Xác thực thành công! Đang chuyển hướng...');
+        }
+        navigate('/');
+
+    } catch (error: any) {
+        console.error('Verification failed:', error);
+        if (antMessage) {
+            antMessage.error(error.message || 'Xác thực thất bại. Vui lòng kiểm tra lại mã.');
+        }
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
@@ -123,54 +168,83 @@ const Login: React.FC = () => {
             </div>
           </Link>
 
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: '#111827' }}>Đăng nhập</h2>
-          <p style={{ fontSize: '14px', marginBottom: '20px', color: '#6b7280' }}>
-            Chào mừng bạn đến với Tradingbot
-          </p>
+          {!showVerificationForm ? (
+            // FORM ĐĂNG NHẬP CHÍNH
+            <>
+                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: '#111827' }}>Đăng nhập</h2>
+                <p style={{ fontSize: '14px', marginBottom: '20px', color: '#6b7280' }}>
+                  Chào mừng bạn đến với Tradingbot
+                </p>
+                <Form form={loginForm} layout="vertical" onFinish={onFinishLogin} initialValues={{ remember: true }}>
+                  <Form.Item
+                    name="phone"
+                    rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
+                  >
+                    <Input
+                      size="large"
+                      placeholder="Số điện thoại"
+                      prefix={<UserOutlined />}
+                    />
+                  </Form.Item>
 
-          <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ remember: true }}>
-            <Form.Item
-              name="phone"
-              rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
-            >
-              <Input
-                size="large"
-                placeholder="Số điện thoại"
-                prefix={<UserOutlined />}
-              />
-            </Form.Item>
+                  <Form.Item
+                    name="password"
+                    rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
+                  >
+                  <Input.Password
+                      size="large"
+                      placeholder="Mật khẩu"
+                      prefix={<LockOutlined />}
+                    />
+                  </Form.Item>
 
-            <Form.Item
-              name="password"
-              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
-            >
-            <Input.Password
-                size="large"
-                placeholder="Mật khẩu"
-                prefix={<LockOutlined />}
-              />
-            </Form.Item>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <Form.Item name="remember" valuePropName="checked" noStyle>
+                      <Checkbox>Remember me</Checkbox>
+                    </Form.Item>
+                  </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox>Remember me</Checkbox>
-              </Form.Item>
-            </div>
+                  <Form.Item>
+                    <Button type="primary" htmlType="submit" size="large" block loading={isSubmitting}>
+                      Đăng nhập
+                    </Button>
+                  </Form.Item>
 
-            <Form.Item>
-              <Button type="primary" htmlType="submit" size="large" block loading={isSubmitting}>
-                Đăng nhập
-              </Button>
-            </Form.Item>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6b7280' }}>
-              <span>
-                Bạn chưa có tài khoản?{' '}
-                <Link to="/register" style={{ color: '#2563eb', fontWeight: 500 }}>Đăng ký</Link>
-              </span>
-              <Link to="/forgot-password" style={{ color: '#2563eb', fontWeight: 500 }}>Quên mật khẩu</Link>
-            </div>
-          </Form>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6b7280' }}>
+                    <span>
+                      Bạn chưa có tài khoản?{' '}
+                      <Link to="/register" style={{ color: '#2563eb', fontWeight: 500 }}>Đăng ký</Link>
+                    </span>
+                    <Link to="/forgot-password" style={{ color: '#2563eb', fontWeight: 500 }}>Quên mật khẩu</Link>
+                  </div>
+                </Form>
+            </>
+          ) : (
+            // FORM XÁC THỰC MÃ ADMIN
+            <>
+                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: '#111827' }}>Xác thực Admin</h2>
+                <p style={{ fontSize: '14px', marginBottom: '20px', color: '#6b7280' }}>
+                  Vui lòng nhập mã xác thực đã được gửi đến email của bạn.
+                </p>
+                <Form form={verifyForm} layout="vertical" onFinish={onFinishVerification}>
+                     <Form.Item
+                        name="verificationCode"
+                        rules={[{ required: true, message: 'Vui lòng nhập mã xác thực!' }]}
+                    >
+                        <Input
+                            size="large"
+                            placeholder="Mã xác thực"
+                            prefix={<LockOutlined />}
+                        />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" size="large" block loading={isSubmitting}>
+                            Xác thực
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </>
+          )}
         </div>
       </div>
     </div>
