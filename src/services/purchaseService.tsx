@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { authService } from './authService'; // Import authService
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5131';
 // Interfaces
@@ -27,10 +28,10 @@ export interface PurchaseHistoryResponse {
     purchases: PurchaseHistory[];
     total: number;
 }
-
 // Service class
 export class PurchaseService {
     private baseUrl: string;
+    private readonly axiosInstance = authService.axios; // Use the authenticated axios instance
 
     constructor(baseUrl: string = API_URL) {
         this.baseUrl = baseUrl;
@@ -39,7 +40,7 @@ export class PurchaseService {
     // Add a new purchase history
     async addPurchaseHistory(purchase: PurchaseHistoryCreate): Promise<PurchaseHistory> {
         try {
-            const response = await axios.post(`${this.baseUrl}/api/purchaseHistory/add`, purchase);
+            const response = await this.axiosInstance.post(`${this.baseUrl}/api/purchaseHistory/add`, purchase);
             return response.data;
         } catch (error) {
             throw this.handleError(error);
@@ -49,7 +50,7 @@ export class PurchaseService {
     // Get all purchase histories for a user
     async getAllPurchasesByUser(userId: string): Promise<PurchaseHistoryResponse> {
         try {
-            const response = await axios.get(`${this.baseUrl}/api/purchaseHistory/getPurchaseAllByUser`, {
+            const response = await this.axiosInstance.get(`${this.baseUrl}/api/purchaseHistory/getPurchaseAllByUser`, {
                 params: { userId }
             });
             return response.data;
@@ -61,7 +62,7 @@ export class PurchaseService {
     // Get purchase histories for a specific month
     async getPurchasesByMonth(userId: string, month: number, year?: number): Promise<PurchaseHistoryResponse> {
         try {
-            const response = await axios.get(`${this.baseUrl}/api/purchaseHistory/getPurchaseMonthByUser`, {
+            const response = await this.axiosInstance.get(`${this.baseUrl}/api/purchaseHistory/getPurchaseMonthByUser`, {
                 params: { userId, month, year }
             });
             return response.data;
@@ -72,7 +73,7 @@ export class PurchaseService {
 
     async getPurchasesByYear(userId: string, year?: number): Promise<PurchaseHistoryResponse> {
         try {
-            const response = await axios.get(`${this.baseUrl}/api/purchaseHistory/getPurchaseYearByUser`, {
+            const response = await this.axiosInstance.get(`${this.baseUrl}/api/purchaseHistory/getPurchaseYearByUser`, {
                 params: { userId, year }
             });
             return response.data;
