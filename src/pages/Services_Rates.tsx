@@ -2,7 +2,10 @@ import iconBot from "/src/assets/iconbotnew.png";
 import iconBot2 from "/src/assets/iconbothi.jpg";
 import { useEffect, useState } from 'react';
 import { priceBotService, type PriceBot } from '../services/priceBotService';
-import { botTradingService, type BotTrading } from '../services/botService';
+import { botTradingService } from '../services/botService';
+import { paymentService } from '../services/paymentService';
+import { authService } from '../services/authService';
+import { Button, message } from 'antd';
 
 function ServiceRates() {
   const [groupedPriceBots, setGroupedPriceBots] = useState<{
@@ -48,6 +51,50 @@ function ServiceRates() {
 
     fetchData();
   }, []);
+
+//button buy--------------------------------------------------------------------
+
+    const handleBuyNow = async (month: number, botTradingId: number) => {
+  try {
+    // 1. Kiểm tra xem người dùng đã đăng nhập chưa
+    const user = authService.getCurrentUser();
+    if (!user) {
+      message.warning("Vui lòng đăng nhập để tiếp tục thanh toán.");
+      return;
+    }
+
+    // 2. Chuẩn bị dữ liệu yêu cầu để tạo link thanh toán
+    const request = {
+      userId: user.userId,
+      month: month,
+      botTradingId: botTradingId,
+      returnUrl: `${window.location.origin}/success`, // URL khi thanh toán thành công
+      cancelUrl: `${window.location.origin}/cancel`,   // URL khi hủy thanh toán
+    };
+    // 3. Gọi API để tạo link thanh toáns
+    const response = await paymentService.createPaymentLink(request);
+    console.log(response);
+    // 4. Chuyển hướng người dùng đếns trang thanh toán
+    if (response) {
+      // Mở link thanh toán trong một tab mới
+      window.open(response.data, "_blank");
+    } else {
+      message.error("Không nhận được liên kết thanh toán từ máy chủ.");
+    }
+  } catch (error: any) {
+    // 5. Xử lý lỗi nếu có
+    const errorMessage = error.response?.data?.message || error.message || 'Đã xảy ra lỗi khi tạo liên kết thanh toán.';
+    message.error(errorMessage);
+    console.error('Lỗi khi thanh toán:', error);
+  }
+};
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+      useEffect(() => {
+      const user = authService.getCurrentUser();
+      setIsLoggedIn(!!user);
+        }, []);
 
 
   return (
@@ -113,9 +160,15 @@ function ServiceRates() {
                           )}
 
                         </div>
-                        <button className="w-full bg-black text-white py-3 text-sm font-semibold hover:bg-gray-800 transition-colors">
-                          Mua Ngay
-                        </button>
+                          {isLoggedIn && (
+                          <Button 
+                            type="primary" 
+                            className="w-full bg-black text-white py-3 text-sm font-semibold hover:bg-gray-800 transition-colors"
+                            onClick={() => handleBuyNow(priceBot.month, priceBot.botTradingId)}
+                          >
+                            Mua ngay
+                          </Button>
+                          )}
                       </div>
                     ))}
                   </div>
