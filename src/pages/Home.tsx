@@ -1,6 +1,7 @@
 //import React from 'react';
 //import Slider from 'react-slick';
-import { Button, Card, message } from 'antd';
+import { Button, Card, message, Modal, Form, Input, Popconfirm, Upload } from 'antd';
+import { EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { paymentService } from '../services/paymentService';
@@ -8,6 +9,7 @@ import { authService } from '../services/authService';
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { priceBotService, type PriceBot } from '../services/priceBotService';
+import { contentService, Content, ContentCreateDTO, ContentUpdateDTO } from '../services/contentService';
 
 
 const carouselImages = [
@@ -79,10 +81,19 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const autoPlayTime = 3000;
 
+  // State for dynamic content
+  const [contents, setContents] = useState<Content[]>([]);
+  const [contentLoading, setContentLoading] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingContent, setEditingContent] = useState<Content | null>(null);
+  const [form] = Form.useForm();
+  const [isAdmin, setIsAdmin] = useState(false);
+
 
     useEffect(() => {
       const user = authService.getCurrentUser();
       setIsLoggedIn(!!user);
+      setIsAdmin(user?.roles?.includes('Admin') || false);
 
   const fetchPriceBots = async () => {
         try {
@@ -96,7 +107,21 @@ const HomePage = () => {
         }
       };
 
+    const fetchContents = async () => {
+      try {
+        const data = await contentService.getContentsByPage('home');
+        console.log('Fetched home contents:', data);
+        setContents(data);
+      } catch (error) {
+        console.error('Error fetching contents:', error);
+        message.error('Không thể tải nội dung tính năng');
+      } finally {
+        setContentLoading(false);
+      }
+    };
+
     fetchPriceBots();
+    fetchContents();
   }, []);
 
 
@@ -137,29 +162,8 @@ const HomePage = () => {
   
 
 //------------------------------------------------------------------------------------------------------------------------------
-const processStepsData = [
-  { 
-    id: 1,
-    icon: "🚀",
-    title: 'Giao Dịch Tự Động Và Linh Hoạt',
-    content:
-      "Bot có khả năng thực hiện giao dịch tự động dựa trên các chiến lược đã được lập trình sẵn hoặc tùy chỉnh theo nhu cầu của bạn.Bot không chỉ giúp bạn giao dịch tự động mà còn điều chỉnh lệnh linh hoạt theo biến động thị trường. Với khả năng cập nhật liên tục, bot đảm bảo hiệu suất tối ưu và giúp bạn tận dụng mọi cơ hội đầu tư.",
-  },
-  {
-    id: 2,
-    icon: "🚀",
-    title: 'Tự động thông báo',
-    content:
-      "Hệ thống tự động gửi cảnh báo tín hiệu đến người dùng giúp không bỏ lỡ cơ hội. Với công nghệ cảnh báo theo thời gian thực, bot sẽ thông báo ngay khi có tín hiệu quan trọng. Bạn có thể nhận thông báo qua nền tảng khác nhau, đảm bảo luôn cập nhật diễn biến thị trường nhanh chóng.",
-  },
-  {
-    id: 3,
-    icon: "🚀",
-    title: 'Hỗ Trợ 24/7',
-    content:
-      "Bot hoạt động liên tục 24/7, giúp bạn luôn nắm bắt được mọi biến động của thị trường. Bất kể ngày hay đêm, bot luôn sẵn sàng theo dõi thị trường, giúp bạn không bỏ lỡ bất kỳ cơ hội đầu tư nào. Hệ thống liên tục cập nhật dữ liệu, đưa ra quyết định nhanh chóng và tối ưu hóa chiến lược giao dịch.",
-  },
-];
+// Moved processStepsData inside the component to be filtered from fetched contents
+// const processStepsData = [...]
 
 interface ProcessStepCardProps {
   icon: React.ReactNode;
@@ -182,6 +186,73 @@ const ProcessStepCard: React.FC<ProcessStepCardProps> = ({ icon, title, content 
     </div>
   );
 };
+
+
+  const handleAddContent = () => {
+    setEditingContent(null);
+    form.resetFields();
+    setIsModalVisible(true);
+  };
+
+  const handleEditContent = (content: Content) => {
+    setEditingContent(content);
+    form.setFieldsValue({
+      title: content.title,
+      content: content.content,
+      page: 'home'
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleDeleteContent = async (id: string) => {
+    try {
+      await contentService.deleteContent(id);
+      message.success('Xóa nội dung thành công');
+      const data = await contentService.getContentsByPage('home'); // Refetch
+      setContents(data);
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      message.error('Không thể xóa nội dung');
+    }
+  };
+
+  const handleModalOk = async () => {
+    try {
+      const values = await form.validateFields();
+      console.log('Form values:', values);
+
+      if (editingContent) {
+        const updateDto: ContentUpdateDTO = {
+          title: values.title,
+          content: values.content,
+          page: 'home'
+        };
+        
+        console.log('Update DTO:', updateDto);
+        await contentService.updateContent(editingContent.id.toString(), updateDto);
+        message.success('Cập nhật nội dung thành công');
+      } else {
+        const createDto: ContentCreateDTO = {
+          title: values.title,
+          content: values.content,
+          page: 'home'
+        };
+        
+        console.log('Create DTO:', createDto);
+        await contentService.createContent(createDto);
+        message.success('Thêm nội dung thành công');
+      }
+      setIsModalVisible(false);
+      const data = await contentService.getContentsByPage('home'); // Refetch
+      setContents(data);
+    } catch (error) {
+      console.error('Error saving content:', error);
+      message.error('Không thể lưu nội dung');
+    }
+  };
+
+  const leftColumnContent = contents.find(item => item.id === 999);
+  const rightColumnContents = contents.filter(item => item.id !== 999);
 
 
   return (
@@ -238,27 +309,98 @@ const ProcessStepCard: React.FC<ProcessStepCardProps> = ({ icon, title, content 
 
             {/* cot trai */}
           <div className="lg:w-5/12 xl:w-1/2 w-full px-4 py-8">
-            <h2 className="text-left text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6">
-              Tối ưu hóa giao dịch với công nghệ tiên tiến 
-            </h2>
-            <p className="text-left text-gray-700 text-base md:text-lg leading-relaxed text-justify">
-              Hệ thống bot trading của chúng tôi giúp bạn giao dịch một cách tự động, hiệu quả và chính xác. Được thiết kế với các thuật toán hiện đại, bot có khả năng nhận diện tín hiệu thị trường, đặt lệnh nhanh chóng và theo dõi trạng thái giao dịch theo thời gian thực.
-            </p>
-            <p className="mt-4 text-left text-gray-700 text-base md:text-lg leading-relaxed text-justify">
-              Các tính năng nổi bật: Giao dịch tự động: Bot sẽ phân tích xu hướng thị trường và thực hiện giao dịch theo các tín hiệu thông minh. Quản lý vị thế: Tích hợp chức năng hủy lệnh, đảo chiều vị thế và chốt lời theo từng chiến lược đặt trước. Theo dõi thị trường: Hiển thị tín hiệu giá, trạng thái lệnh và cập nhật danh sách giao dịch liên tục. Bảo mật và đăng nhập an toàn: Hệ thống xác thực giúp bạn đăng nhập và quản lý tài khoản một cách an toàn.
-            </p>
+            {contentLoading ? (
+              <p className="text-center text-gray-700">Đang tải nội dung...</p>
+            ) : leftColumnContent ? (
+              <>
+                <h2 className="text-left text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6">
+                  {leftColumnContent.title}
+                </h2>
+                <p className="text-left text-gray-700 text-base md:text-lg leading-relaxed text-justify">
+                  {leftColumnContent.content}
+                </p>
+                {isAdmin && (
+                  <Button
+                    type="primary"
+                    icon={<EditOutlined />}
+                    onClick={() => handleEditContent(leftColumnContent)}
+                    className="mt-4"
+                  >
+                    Chỉnh sửa
+                  </Button>
+                )}
+              </>
+            ) : (
+               <p className="text-center text-gray-700">Không tìm thấy nội dung cho cột trái.</p>
+            )}
           </div>
 
             {/* cot phai */}
-            <div className="lg:w-7/12 xl:w-1/2 w-full flex flex-col space-y-8 md:space-y-10">
-              {processStepsData.map((step) => (
-                <ProcessStepCard 
-                  key={step.id}
-                  icon={step.icon}
-                  title={step.title}
-                  content={step.content}
-                />
-              ))}
+            <div className="lg:w-7/12 xl:w-1/2 w-full flex flex-col space-y-8 md:space-y-10 relative">
+              <div className="flex justify-end mb-4 pr-4">
+                {isAdmin && (
+                   <Button
+                     type="primary"
+                     icon={<PlusOutlined />}
+                     onClick={handleAddContent}
+                   >
+                     Thêm mới
+                   </Button>
+                )}
+              </div>
+              {contentLoading ? (
+                <p className="text-center text-gray-700">Đang tải nội dung...</p>
+              ) : rightColumnContents.length > 0 ? (
+                <div className="max-h-[600px] md:max-h-[650px] lg:max-h-[700px] xl:max-h-[750px] overflow-y-auto scrollbar-hide px-4">
+                  {rightColumnContents.map((step) => (
+                    <div key={step.id} className="mb-8 last:mb-0 relative">
+                      <ProcessStepCard 
+                        icon={"🚀"} // Hardcoded rocket icon
+                        title={step.title}
+                        content={step.content}
+                      />
+                       {isAdmin && (
+                         <div className="absolute top-2 right-2 flex space-x-2 z-10">
+                           <Button
+                             type="primary"
+                             icon={<EditOutlined />}
+                             onClick={() => handleEditContent(step)}
+                             size="small"
+                           />
+                           <Popconfirm
+                             title="Bạn có chắc chắn muốn xóa nội dung này?"
+                             onConfirm={() => handleDeleteContent(step.id.toString())}
+                             okText="Có"
+                             cancelText="Không"
+                           >
+                             <Button
+                               type="primary"
+                               danger
+                               icon={<DeleteOutlined />}
+                               size="small"
+                             />
+                           </Popconfirm>
+                         </div>
+                       )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                 <p className="text-center text-gray-700">Không có nội dung tính năng nào.</p>
+              )}
+              {rightColumnContents.length > (/* Approximate number of cards that fit */ 3) && (
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-8 flex items-center justify-center">
+                  <div className="animate-bounce">
+                    {/* Updated SVG icon */}
+                    <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      {/* First chevron */}
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7" />
+                      {/* Second chevron slightly above */}
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10l-7 7m0 0l-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -320,6 +462,45 @@ const ProcessStepCard: React.FC<ProcessStepCardProps> = ({ icon, title, content 
           )}
         </div>
       </section>
+
+      <Modal
+        title={editingContent ? 'Chỉnh sửa nội dung' : 'Thêm nội dung mới'}
+        open={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={() => {
+          setIsModalVisible(false);
+        }}
+        width={800}
+        destroyOnClose // Destroy modal content on close to reset form/upload
+      >
+        <Form
+          form={form}
+          layout="vertical"
+        >
+          <Form.Item
+            name="title"
+            label="Tiêu đề"
+            rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="content"
+            label="Nội dung"
+            rules={[{ required: true, message: 'Vui lòng nhập nội dung' }]}
+          >
+            <Input.TextArea rows={6} />
+          </Form.Item>
+           {/* Hidden field for page, always 'home' */}
+          <Form.Item
+            name="page"
+            initialValue="home"
+            hidden
+          >
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
 
     </div>
   );
