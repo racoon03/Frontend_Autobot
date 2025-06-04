@@ -1,14 +1,13 @@
-import axios from 'axios';
 import { authService } from './authService';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5131';
 
 export interface Content {
-  id: string;
+  id: number;
   title: string;
   content: string;
   page: string;
-  imageUrl?: string;
+  url?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -17,18 +16,18 @@ export interface ContentCreateDTO {
   title: string;
   content: string;
   page: string;
-  image?: File;
+  ImageFile?: File;
 }
 
 export interface ContentUpdateDTO {
   title?: string;
   content?: string;
   page?: string;
-  image?: File;
+  ImageFile?: File;
 }
 
 class ContentService {
-  private readonly baseUrl = `${API_URL}/api/Contents`;
+  private readonly baseUrl = `${API_URL}/api/contents`;
   private readonly axiosInstance = authService.axios;
 
   async getAllContents(): Promise<Content[]> {
@@ -37,7 +36,7 @@ class ContentService {
   }
 
   async getContentById(id: string): Promise<Content> {
-    const response = await this.axiosInstance.get(`${this.baseUrl}/${id}`);
+    const response = await this.axiosInstance.get(`${this.baseUrl}${id}`);
     return response.data;
   }
 
@@ -51,8 +50,8 @@ class ContentService {
     formData.append('title', contentDto.title);
     formData.append('content', contentDto.content);
     formData.append('page', contentDto.page);
-    if (contentDto.image) {
-      formData.append('image', contentDto.image);
+    if (contentDto.ImageFile) {
+      formData.append('ImageFile', contentDto.ImageFile);
     }
 
     const response = await this.axiosInstance.post(this.baseUrl, formData, {
@@ -68,8 +67,8 @@ class ContentService {
     if (contentDto.title) formData.append('title', contentDto.title);
     if (contentDto.content) formData.append('content', contentDto.content);
     if (contentDto.page) formData.append('page', contentDto.page);
-    if (contentDto.image) {
-      formData.append('image', contentDto.image);
+    if (contentDto.ImageFile) {
+      formData.append('ImageFile', contentDto.ImageFile);
     }
 
     const response = await this.axiosInstance.put(`${this.baseUrl}/${id}`, formData, {

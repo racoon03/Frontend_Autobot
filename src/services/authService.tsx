@@ -114,8 +114,6 @@ export class AuthService {
         };
         return userData;
       } else if (response.data.userId && response.data.roles) {
-        // Phản hồi không có token nhưng có user info (admin cần xác thực bước 2)
-        // Frontend cần xử lý trường hợp này để hiển thị form nhập mã
         const userData: UserData = {
             userId: response.data.userId,
             name: response.data.name,
@@ -294,8 +292,7 @@ export class AuthService {
     const tokenExpiry = new Date(new Date().getTime() + EXPIRATION_TIMES.ACCESS_TOKEN);
     const refreshTokenExpiry = new Date(new Date().getTime() + EXPIRATION_TIMES.REFRESH_TOKEN);
 
-    // Extract user specific data and save it as a UserData object in the cookie
-    // Only set user data if it's available in the response
+
     if (data.userId) {
       const userToSave: UserData = {
           userId: data.userId,

@@ -1,33 +1,189 @@
-import { Card, Table } from "antd";
-import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
+import { Card, Button, Modal, Form, Input, message, Popconfirm, Table, Upload } from 'antd';
+import { EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { contentService, Content, ContentCreateDTO, ContentUpdateDTO } from '../services/contentService';
+import { authService } from '../services/authService';
 import { botTradingService, type BotTrading } from '../services/botService';
+import { Link } from 'react-router-dom';
+import type { UploadFile } from 'antd/es/upload/interface';
 
-export default function About() {
-//table---------------------------------------------------------------------
+const About: React.FC = () => {
+  const [contents, setContents] = useState<Content[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingContent, setEditingContent] = useState<Content | null>(null);
+  const [form] = Form.useForm();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [botListData, setBotListData] = useState<BotTrading[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
 
   useEffect(() => {
+    const user = authService.getCurrentUser();
+    setIsAdmin(user?.roles?.includes('Admin') || false);
+    fetchContents();
+    fetchBotData();
+  }, []);
+
     const fetchBotData = async () => {
       try {
-        setLoading(true);
         const data = await botTradingService.getAllBotTradings();
         setBotListData(data); 
-        setError(null);
+        setError(null); 
       } catch (err) {
         console.error("Failed to fetch bot list:", err);
         setError("Không thể tải danh sách bot. Vui lòng thử lại sau.");
         setBotListData([]);
+    }
+  };
+
+  const fetchContents = async () => {
+    try {
+      const data = await contentService.getContentsByPage('about');
+      console.log(data);
+      setContents(data);
+    } catch (error) {
+      console.error('Error fetching contents:', error);
+      message.error('Không thể tải nội dung');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBotData(); 
-  }, []); 
+  const handleAddContent = () => {
+    setEditingContent(null);
+    form.resetFields();
+    setFileList([]);
+    setIsModalVisible(true);
+  };
 
+  const handleEditContent = (content: Content) => {
+    setEditingContent(content);
+    form.setFieldsValue({
+      title: content.title,
+      content: content.content,
+      page: 'about'
+    });
+    if (content.url) {
+      setFileList([{
+        uid: '-1',
+        name: 'current-image',
+        status: 'done',
+        url: content.url,
+      }]);
+    } else {
+      setFileList([]);
+    }
+    setIsModalVisible(true);
+  };
+
+  const handleDeleteContent = async (id: string) => {
+    try {
+      await contentService.deleteContent(id);
+      message.success('Xóa nội dung thành công');
+      fetchContents();
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      message.error('Không thể xóa nội dung');
+    }
+  };
+
+  const handleModalOk = async () => {
+    try {
+      const values = await form.validateFields();
+      console.log('Form values:', values);
+
+      if (editingContent) {
+        const updateDto: ContentUpdateDTO = {
+          title: values.title,
+          content: values.content,
+          page: 'about'
+        };
+        
+        if (fileList.length > 0 && fileList[0].originFileObj) {
+          updateDto.ImageFile = fileList[0].originFileObj;
+        }
+        
+        console.log('Update DTO:', updateDto);
+        await contentService.updateContent(editingContent.id.toString(), updateDto);
+        message.success('Cập nhật nội dung thành công');
+      } else {
+        const createDto: ContentCreateDTO = {
+          title: values.title,
+          content: values.content,
+          page: 'about'
+        };
+        
+        if (fileList.length > 0 && fileList[0].originFileObj) {
+          createDto.ImageFile = fileList[0].originFileObj;
+        }
+        
+        console.log('Create DTO:', createDto);
+        await contentService.createContent(createDto);
+        message.success('Thêm nội dung thành công');
+      }
+      setIsModalVisible(false);
+      fetchContents();
+    } catch (error) {
+      console.error('Error saving content:', error);
+      message.error('Không thể lưu nội dung');
+    }
+  };
+
+  const renderContentBlock = (content: Content, index: number) => {
+    const isEven = index % 2 === 0;
+    const bgColor = isEven ? 'bg-gray-300' : 'bg-white';
+    const flexDirection = isEven ? 'md:flex-row' : 'md:flex-row-reverse';
+
+
+    // Construct the full image URL
+    const imageUrl = content.url 
+      ? `${import.meta.env.VITE_API_URL || 'http://localhost:5131'}/assets/images/${content.url}`
+      : `src/assets/info${index + 1}.png`;
+
+    console.log('Final image URL for rendering:', imageUrl);
+
+    return (
+      <div key={content.id} className={`block-animate-on-scroll h-[75vh] flex flex-col ${flexDirection} justify-center md:space-x-8 items-start px-4 py-8 ${bgColor} mb-40 pt-28`}>
+        <img
+          src={imageUrl}
+          alt={content.title}
+          className="p-4 h-[300px] sm:h-[400px] md:h-[500px] object-contain"
+          onError={(e) => {
+            console.error('Image load error:', e);
+            e.currentTarget.src = `src/assets/info${index + 1}.png`;
+          }}
+        />
+        <div className="pt-16 relative">
+          <Card className="w-[70vh] h-[300px] rounded-2xl shadow-lg">
+            <h2 className="text-2xl font-bold mb-2">{content.title}</h2>
+            <p className="text-lg text-gray-600 mb-4">{content.content}</p>
+          </Card>
+          {isAdmin && (
+            <div className="absolute top-2 right-2 flex space-x-2">
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => handleEditContent(content)}
+              />
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xóa nội dung này?"
+                onConfirm={() => handleDeleteContent(content.id.toString())}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button
+                  type="primary"
+                  danger
+                  icon={<DeleteOutlined />}
+                />
+              </Popconfirm>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const columns = [
     {
@@ -54,8 +210,13 @@ export default function About() {
     },
   ];
 
+  // const dataSource = botListData.map(bot => ({
+  //   ...bot,
+  //   key: `${bot.botTradingId}-${bot.month}-${bot.price}`,
+  // }));
+
   return (
-    <div className="mx-0 my-0 px-0 py-0">
+    <div className="min-h-screen">
         <div className="bg-[url('src/assets/abouttest.jpg')] h-[75vh] bg-cover flex items-center py-16 px-4 sm:px-6 lg:px-8">
           <div className="text-start ml-8">
             <h2 className="text-3xl text-white font-bold uppercase">
@@ -64,89 +225,32 @@ export default function About() {
           </div>
         </div>
 
-        <div className="bg-white py-10 px-5 space-y-10">
-          <h2 className="text-2xl font-bold uppercase text-black text-center">
+      <div className="bg-white py-10 px-5 flex justify-center items-center space-x-4">
+        <h2 className="text-2xl font-bold uppercase text-black text-center mb-0">
             Tại Sao Chọn Bot Đầu Tư Chứng Khoán?
           </h2>
-        </div>
-
-
-          {/* block 1 */}
-          <div className="block-animate-on-scroll h-[75vh] flex flex-col md:flex-row justify-center md:space-x-8 items-start px-4 py-8 bg-gray-300 mb-40 pt-28">
-            <img
-              src="src/assets/info6.png"
-              alt="Block 1"
-              className="p-4 h-[300px] sm:h-[400px] md:h-[500px]" 
-              />
-            <div className="pt-16">
-              <Card className="w-[70vh] h-[300px] rounded-2xl shadow-lg">
-                <h2 className="text-2xl font-bold mb-2">
-                  Phân Tích Dữ Liệu Nhanh Chóng Và Chính Xác
-                </h2>
-                <p className="text-lg text-gray-600 mb-4">
-                  Sử dụng Amibroker, một trong những nền tảng phân tích kỹ thuật hàng đầu, bot tận dụng các thuật toán tiên tiến để phân tích hàng triệu điểm dữ liệu từ thị trường chứng khoán toàn cầu. Nhờ khả năng xử lý mạnh mẽ và công nghệ hiện đại, bot giúp bạn đánh giá xu hướng thị trường, xác định cơ hội đầu tư tiềm năng và đưa ra quyết định chính xác trong thời gian thực, tối ưu hóa lợi nhuận.
-                </p>
-              </Card>
-            </div>
+        {isAdmin && (
+          <Button
+            type="primary"
+            shape="circle"
+            size="large"
+            icon={<PlusOutlined />}
+            onClick={handleAddContent}
+          />
+        )}
           </div>
 
-          {/* block 2 */}
-          <div className="block-animate-on-scroll flex flex-col md:flex-row-reverse justify-center md:space-x-8 items-start px-4 py-8 bg-white mb-40">
-            <img
-              src="src/assets/info1.png"
-              alt="Block 2"
-              className="p-4 h-[300px] sm:h-[400px] md:h-[500px]"
-            />
-            <div className="pt-16">
-              <Card className="w-[70vh] h-[300px] rounded-2xl shadow-lg">
-                <h2 className="text-2xl font-bold mb-2">
-                  Giao Dịch Tự Động Và Linh Hoạt
-                </h2>
-                <p className="text-lg text-gray-600 mb-4">
-                  Bot có khả năng thực hiện giao dịch tự động dựa trên các chiến lược đã được lập trình sẵn hoặc tùy chỉnh theo nhu cầu của bạn. Với tính năng linh hoạt, bot có thể điều chỉnh chiến lược theo điều kiện thị trường, giúp tối ưu hóa lợi nhuận và giảm thiểu rủi ro một cách hiệu quả.
-                </p>
-              </Card>
+      {loading ? (
+        <div className="flex justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
             </div>
-          </div>
-
-          {/* block 3 */}
-          <div className="block-animate-on-scroll h-[75vh] flex flex-col md:flex-row justify-center md:space-x-8 items-start px-4 py-8 bg-gray-300 mb-40 pt-28">
-            <img
-              src="src/assets/info.png"
-              alt="Block 3"
-              className="p-4 h-[300px] sm:h-[400px] md:h-[500px]"
-            />
-            <div className="pt-16">
-              <Card className="w-[70vh] h-[300px] rounded-2xl shadow-lg">
-                <h2 className="text-xl font-bold mb-2">Giảm Thiểu Rủi Ro</h2>
-                <p className="text-lg text-gray-600 mb-4">
-                  Với khả năng phân tích rủi ro và quản lý danh mục đầu tư một cách hiệu quả, bot giúp bạn giảm thiểu rủi ro và bảo vệ lợi nhuận của mình. Bằng cách theo dõi biến động thị trường và áp dụng các chiến lược điều chỉnh phù hợp, bot giúp bạn duy trì sự ổn định tài chính và tối ưu hóa danh mục đầu tư, đảm bảo an toàn trước những biến động không lường trước.
-                </p>
-              </Card>
-            </div>
-          </div>
-
-          {/* block 4 */}
-          <div className="block-animate-on-scroll flex flex-col md:flex-row-reverse justify-center md:space-x-8 items-start px-4 py-8 bg-white">
-            <img
-              src="src/assets/info3.png"
-              alt="Block 4"
-              className="p-4 h-[300px] sm:h-[400px] md:h-[500px]"
-            />
-            <div className="pt-16">
-              <Card className="w-[70vh] h-[300px] rounded-2xl shadow-lg">
-                <h2 className="text-2xl font-bold mb-2">Hỗ Trợ 24/7</h2>
-                <p className="text-lg text-gray-600 mb-4">
-                  Bot hoạt động liên tục 24/7, giúp bạn luôn nắm bắt được mọi biến động của thị trường. Với khả năng giám sát tự động và cập nhật liên tục, bot đảm bảo bạn không bỏ lỡ bất kỳ cơ hội đầu tư nào. Dù ngày hay đêm, bot vẫn duy trì hiệu suất tối ưu, giúp bạn phản ứng nhanh chóng trước mọi thay đổi và đưa ra quyết định chính xác.
-                </p>
-              </Card>
-            </div>
-          </div>
+      ) : (
+        contents.map((content, index) => renderContentBlock(content, index))
+      )}
 
           <div className="mx-8 items-center">
-
             <h2 className="text-2xl text-center font-bold text-black mb-6 mt-24">
-              THÔNG SỐ LỆNH BOT
+              Bảng Giá Các Gói Bot
             </h2>
 
             {loading && <p className="text-black text-center">Đang tải dữ liệu...</p>}
@@ -195,6 +299,76 @@ export default function About() {
         </Link>
       </div>
 
+      <Modal
+        title={editingContent ? 'Chỉnh sửa nội dung' : 'Thêm nội dung mới'}
+        open={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setFileList([]);
+        }}
+        width={800}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+        >
+          <Form.Item
+            name="title"
+            label="Tiêu đề"
+            rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="content"
+            label="Nội dung"
+            rules={[{ required: true, message: 'Vui lòng nhập nội dung' }]}
+          >
+            <Input.TextArea rows={6} />
+          </Form.Item>
+          <Form.Item
+            label="Ảnh"
+            name="image"
+          >
+            <Upload
+              listType="picture-card"
+              maxCount={1}
+              fileList={fileList}
+              beforeUpload={(file) => {
+                const isLt5M = file.size / 1024 / 1024 < 5;
+                if (!isLt5M) {
+                  message.error('Ảnh phải nhỏ hơn 5MB!');
+                  return false;
+                }
+                const isImage = file.type.startsWith('image/');
+                if (!isImage) {
+                  message.error('Chỉ được upload file ảnh!');
+                  return false;
+                }
+                return false;
+              }}
+              onChange={({ fileList }) => {
+                console.log('File list changed:', fileList);
+                setFileList(fileList);
+              }}
+              onRemove={() => {
+                setFileList([]);
+                return true;
+              }}
+            >
+              {fileList.length >= 1 ? null : (
+                <div>
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8 }}>Upload</div>
+                </div>
+              )}
+            </Upload>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
-}
+};
+
+export default About;
