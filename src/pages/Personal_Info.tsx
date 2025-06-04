@@ -119,42 +119,13 @@ function PersonalInfomation() {
     setProfitDate(date);
   };
 
-  const handleBuyNow = async (month: number, botTradingId: number) => {
-    try {
-      // 1. Kiểm tra xem người dùng đã đăng nhập chưa
-      const user = authService.getCurrentUser();
-      if (!user) {
-        message.warning("Vui lòng đăng nhập để tiếp tục thanh toán.");
-        return;
-      }
+  const handleServiceFilterChange = (value: string) => {
+    setServiceFilterType(value);
+    setServiceDate(null);
+  };
 
-      // 2. Chuẩn bị dữ liệu yêu cầu để tạo link thanh toán
-      const request = {
-        userId: user.userId,
-        month: month,
-        botTradingId: botTradingId,
-        returnUrl: `${window.location.origin}/success`, // URL khi thanh toán thành công
-        cancelUrl: `${window.location.origin}/cancel`, // URL khi hủy thanh toán
-      };
-      // 3. Gọi API để tạo link thanh toáns
-      const response = await paymentService.createPaymentLink(request);
-      console.log(response);
-      // 4. Chuyển hướng người dùng đếns trang thanh toán
-      if (response) {
-        // Mở link thanh toán trong một tab mới
-        window.open(response.data, "_blank");
-      } else {
-        message.error("Không nhận được liên kết thanh toán từ máy chủ.");
-      }
-    } catch (error: any) {
-      // 5. Xử lý lỗi nếu có
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Đã xảy ra lỗi khi tạo liên kết thanh toán.";
-      message.error(errorMessage);
-      console.error("Lỗi khi thanh toán:", error);
-    }
+  const handleServiceDateChange = (date: moment.Moment | null) => {
+    setServiceDate(date);
   };
 
   return (
@@ -342,10 +313,9 @@ function PersonalInfomation() {
             </table>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
-};
-export default HomePage;
+}
 
 export default PersonalInfomation;
