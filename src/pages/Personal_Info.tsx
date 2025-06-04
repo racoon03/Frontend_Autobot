@@ -1,163 +1,232 @@
-import React, { useState } from "react";
-import { Select, DatePicker } from "antd";
-//import moment from "moment";
+//import React from 'react';
+import Slider from "react-slick";
+import { Button, Card, message } from "antd";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import { paymentService } from "../services/paymentService";
+import { authService } from "../services/authService";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { priceBotService, type PriceBot } from "../services/priceBotService";
 
-const { Option } = Select;
+const features = [
+  {
+    title: "Dễ sử dụng",
+    content:
+      "Giao diện trực quan, tự động đưa ra tín hiệu mua bán rõ ràng giúp nhà đầu tư ra quyết định trong thời gian ngắn nhất.",
+  },
+  {
+    title: "Bộ lọc chất lượng",
+    content:
+      "Lọc tín hiệu MUA/BÁN sớm nhất, realtime cho các mã thuận lợi cao nhất, đảm bảo tối ưu hóa lợi nhuận trên vốn đầu tư ban đầu.",
+  },
+  {
+    title: "Tự động thông báo",
+    content:
+      "Hệ thống tự động gửi cảnh báo tín hiệu đến người dùng qua nhiều kênh: Email, Zalo, Telegram, giúp không bỏ lỡ cơ hội.",
+  },
+  {
+    title: "Giao dịch tự động và linh hoạt",
+    content:
+      "Bot có khả năng thực hiện giao dịch tự động dựa trên các chiến lược đã được lập trình sẵn hoặc tùy chỉnh theo nhu cầu của bạn.",
+  },
+  {
+    title: "Hỗ Trợ 24/7",
+    content:
+      "Bot hoạt động liên tục 24/7, giúp bạn luôn nắm bắt được mọi biến động của thị trường.",
+  },
+];
 
-function PersonalInfomation() {
-  const [profitFilterType, setProfitFilterType] = useState<string>("all");
-  const [profitDate, setProfitDate] = useState<moment.Moment | null>(null);// eslint-disable-line
-    //vo hieu hoa bien chua can dung
-
-  const [serviceFilterType, setServiceFilterType] = useState<string>("all");
-  const [serviceDate, setServiceDate] = useState<moment.Moment | null>(null);// eslint-disable-line
-
-  const handleProfitFilterChange = (value: string) => {
-    setProfitFilterType(value);
-    setProfitDate(null);
-  };
-
-  const handleProfitDateChange = (date: moment.Moment | null) => {
-    setProfitDate(date);
-  };
-
-  const handleServiceFilterChange = (value: string) => {
-    setServiceFilterType(value);
-    setServiceDate(null);
-  };
-
-  const handleServiceDateChange = (date: moment.Moment | null) => {
-    setServiceDate(date);
+const FeatureCarousel = () => {
+  const settings = {
+    autoplay: true,
+    autoplaySpeed: 3000,
+    initialSlide: 0,
+    centerMode: true,
+    centerPadding: "60px",
+    slidesToShow: 3,
+    infinite: true,
+    speed: 500,
+    arrows: false,
+    dots: true,
+    focusOnSelect: true,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 1,
+        },
+      },
+    ],
   };
 
   return (
-    <div className="bg-[#1a2a44] text-white font-sans min-h-screen px-4 py-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Top Section: Info + Robot */}
-        <div className="flex flex-col lg:flex-row justify-between gap-6 mb-10">
-          {/* Left - Info */}
-          <div className="w-full lg:w-2/3 space-y-6">
-            {/* Thông tin tài khoản */}
-            <div>
-              <h1 className="text-[#00c4ff] text-2xl font-bold mb-2">THÔNG TIN TÀI KHOẢN</h1>
-              <div className="bg-[#2a3b5a] rounded-lg p-4 space-y-1">
-                <p>Tên: Minh</p>
-                <p>Số dư tài khoản: 0587398313</p>
-                <p>Email: ducminh200092@gmail.com</p>
-              </div>
+    <section className="bg-[#2E3A59] py-16 text-white text-center">
+      <h2 className="text-white md:text-4xl font-bold mb-10 text-[#00D0FF]">
+        Tính năng của hệ thống
+      </h2>
+      <Slider {...settings} className="feature-carousel">
+        {features.map((item, index) => (
+          <div key={index} className="px-4 transform-style">
+            <Card className="rounded-2xl shadow-xl bg-[#668cff] text-white text-left mx-auto feature-card">
+              <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
+              <p className="text-lg leading-relaxed">{item.content}</p>
+            </Card>
+          </div>
+        ))}
+      </Slider>
+    </section>
+  );
+};
+
+const HomePage = () => {
+  //check login-------------------------------------------------------------------
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [priceBots, setPriceBots] = useState<PriceBot[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    setIsLoggedIn(!!user);
+
+    const fetchPriceBots = async () => {
+      try {
+        const data = await priceBotService.getAllPriceBots();
+        console.log(data);
+        setPriceBots(data);
+      } catch (error) {
+        console.error("Error fetching price bots:", error);
+        message.error("Không thể tải dữ liệu gói dịch vụ");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPriceBots();
+  }, []);
+
+  const handleBuyNow = async (month: number, botTradingId: number) => {
+    try {
+      // 1. Kiểm tra xem người dùng đã đăng nhập chưa
+      const user = authService.getCurrentUser();
+      if (!user) {
+        message.warning("Vui lòng đăng nhập để tiếp tục thanh toán.");
+        return;
+      }
+
+      // 2. Chuẩn bị dữ liệu yêu cầu để tạo link thanh toán
+      const request = {
+        userId: user.userId,
+        month: month,
+        botTradingId: botTradingId,
+        returnUrl: `${window.location.origin}/success`, // URL khi thanh toán thành công
+        cancelUrl: `${window.location.origin}/cancel`, // URL khi hủy thanh toán
+      };
+      // 3. Gọi API để tạo link thanh toáns
+      const response = await paymentService.createPaymentLink(request);
+      console.log(response);
+      // 4. Chuyển hướng người dùng đếns trang thanh toán
+      if (response) {
+        // Mở link thanh toán trong một tab mới
+        window.open(response.data, "_blank");
+      } else {
+        message.error("Không nhận được liên kết thanh toán từ máy chủ.");
+      }
+    } catch (error: any) {
+      // 5. Xử lý lỗi nếu có
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Đã xảy ra lỗi khi tạo liên kết thanh toán.";
+      message.error(errorMessage);
+      console.error("Lỗi khi thanh toán:", error);
+    }
+  };
+
+  return (
+    <div className="font-sans">
+      <header className="bg-[#0D1A3D] text-white py-20 text-center">
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
+          HIỆU SUẤT ĐẦU TƯ CAO
+        </h1>
+        <p className="text-xl mb-6">Tự động báo điểm mua bán phái sinh</p>
+        {!isLoggedIn && (
+          <div className="flex justify-center gap-4">
+            <Link to="/login">
+              <Button className="mt-6 px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white font-medium px-4">
+                Đăng nhập
+              </Button>
+            </Link>
+
+            <Link to="/register">
+              <Button className="mt-6 px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white font-medium px-6">
+                Đăng ký
+              </Button>
+            </Link>
+          </div>
+        )}
+      </header>
+
+      <FeatureCarousel />
+
+      <section className="bg-[#0D1A3D] py-16 text-center">
+        <div className="container mx-auto px-4">
+          <h2 className="text-white md:text-4xl font-bold text-green-700 mb-10">
+            Bảng giá dịch vụ
+          </h2>
+
+          {loading ? (
+            <p className="text-center text-white">
+              Đang tải dữ liệu gói dịch vụ...
+            </p>
+          ) : priceBots.length === 0 ? (
+            <p className="text-center text-white">
+              Không có dữ liệu gói dịch vụ.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 justify-items-center">
+              {priceBots.map((pkg, idx) => (
+                <Card
+                  key={idx}
+                  className="rounded-2xl shadow-lg w-full max-w-xs"
+                >
+                  <div className="text-center p-4">
+                    <img
+                      src="src/assets/iconbot.png"
+                      alt="bot"
+                      className="w-32 h-32 mx-auto mb-4"
+                    />
+                    <h3 className="text-xl font-semibold mb-2">{`${pkg.month} Tháng`}</h3>
+                    <p className="text-lg font-bold text-green-700 mb-4">
+                      {pkg.price.toLocaleString("vi-VN")} VND
+                      {pkg.discount > 0 && (
+                        <span className="ml-2 text-sm text-red-500">{`(Giảm ${pkg.discount}%)`}</span>
+                      )}
+                    </p>
+                    {pkg.description && (
+                      <p className="text-sm text-gray-600 mb-4">
+                        {pkg.description}
+                      </p>
+                    )}
+                    {isLoggedIn && (
+                      <Button
+                        type="primary"
+                        className="bg-[#22D3EE]"
+                        onClick={() =>
+                          handleBuyNow(pkg.month, pkg.botTradingId)
+                        }
+                      >
+                        Mua ngay
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              ))}
             </div>
-
-            {/* Lợi nhuận*/}
-            <div>
-              <h1 className="text-[#00c4ff] text-2xl font-bold mb-2">LỢI NHUẬN</h1>
-              <div className="mb-3">
-                <Select value={profitFilterType} style={{ width: 160 }} onChange={handleProfitFilterChange}>
-                  <Option value="all">Tất cả</Option>
-                  <Option value="year">Theo năm</Option>
-                  <Option value="month">Theo tháng</Option>
-                  <Option value="day">Theo ngày</Option>
-                </Select>
-                {profitFilterType === 'year' && <DatePicker picker="year" onChange={handleProfitDateChange} className="ml-3" />}
-                {profitFilterType === 'month' && <DatePicker picker="month" onChange={handleProfitDateChange} className="ml-3" />}
-                {profitFilterType === 'day' && <DatePicker onChange={handleProfitDateChange} className="ml-3" />}
-              </div>
-
-              <div className="bg-[#2a3b5a] rounded-lg shadow-lg overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-[#00c4ff] text-[#1a2a44]">
-                    <tr>
-                      <th className="p-2">NSLĐV</th>
-                      <th className="p-2">GIÁ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="text-center hover:bg-[#3a4b6a] transition">
-                      <td className="p-2">10/07/2024 14:50:33</td>
-                      <td className="p-2">100.000</td>
-                    </tr>
-                  </tbody>
-                </table>
-                <div className="flex justify-center items-center py-2 gap-2">
-                  <button className="bg-[#00c4ff] text-[#1a2a44] px-3 py-1 rounded">{"<"}</button>
-                  <span>1 trên 14</span>
-                  <button className="bg-[#00c4ff] text-[#1a2a44] px-3 py-1 rounded">{">"}</button>
-                </div>
-                <div className="text-right text-sm italic pr-2 py-2">
-                  <p>Tổng lợi nhuận: 100.000 VND</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right - Robot */}
-          <div className="w-full lg:w-1/3 flex-shrink-0 self-center">
-            <img
-              src="/src/assets/iconbot.png"
-              alt="Robot"
-              className="w-full max-w-[300px] mx-auto"
-            />
-          </div>
+          )}
         </div>
-
-        {/* Bottom Section: Gói dịch vụ */}
-        <div>
-          <h1 className="text-[#00c4ff] text-2xl font-bold mb-4">GÓI DỊCH VỤ</h1>
-          <div className="mb-3">
-            <Select value={serviceFilterType} style={{ width: 160 }} onChange={handleServiceFilterChange}>
-              <Option value="all">Tất cả</Option>
-              <Option value="year">Theo năm</Option>
-              <Option value="month">Theo tháng</Option>
-              <Option value="day">Theo ngày</Option>
-            </Select>
-            {serviceFilterType === 'year' && <DatePicker picker="year" onChange={handleServiceDateChange} className="ml-3" />}
-            {serviceFilterType === 'month' && <DatePicker picker="month" onChange={handleServiceDateChange} className="ml-3" />}
-            {serviceFilterType === 'day' && <DatePicker onChange={handleServiceDateChange} className="ml-3" />}
-          </div>
-
-          <div className="bg-[#2a3b5a] rounded-lg shadow-lg overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-[#00c4ff] text-[#1a2a44] text-center">
-                <tr>
-                  <th className="p-3">Ngày Thanh Toán</th>
-                  <th className="p-3">Giá</th>
-                  <th className="p-3">Ngày Bắt Đầu</th>
-                  <th className="p-3">Ngày Kết Thúc</th>
-                  <th className="p-3">Trạng Thái Thanh Toán</th>
-                  <th className="p-3">Trạng Thái Gói</th>
-                </tr>
-              </thead>
-              <tbody className="text-center">
-                <tr className="hover:bg-[#3a4b6a] transition">
-                  <td className="p-3">27/05/2025</td>
-                  <td className="p-3">100.000 VND</td>
-                  <td className="p-3">27/05/2025</td>
-                  <td className="p-3">27/06/2025</td>
-                  <td className="p-3">
-                    <button className="bg-green-600 px-4 py-1 rounded font-medium">Đã Thanh Toán</button>
-                  </td>
-                  <td className="p-3">
-                    <button className="bg-green-500 px-4 py-1 rounded font-medium">Hoạt Động</button>
-                  </td>
-                </tr>
-                <tr className="hover:bg-[#3a4b6a] transition">
-                  <td className="p-3">27/04/2025</td>
-                  <td className="p-3">150.000 VND</td>
-                  <td className="p-3">27/04/2025</td>
-                  <td className="p-3">27/05/2025</td>
-                  <td className="p-3">
-                    <button className="bg-orange-500 px-4 py-1 rounded font-medium">Chưa Thanh Toán</button>
-                  </td>
-                  <td className="p-3">
-                    <button className="bg-red-500 px-4 py-1 rounded font-medium">Hết Hạn</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
   );
-}
-
-export default PersonalInfomation;
+};
+export default HomePage;
