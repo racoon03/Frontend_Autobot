@@ -2,60 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Select, DatePicker } from "antd";
 import axios from "axios";
 import { authService } from "../services/authService";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { priceBotService, type PriceBot } from "../services/priceBotService";
-
-const features = [
-  {
-    title: "Dễ sử dụng",
-    content:
-      "Giao diện trực quan, tự động đưa ra tín hiệu mua bán rõ ràng giúp nhà đầu tư ra quyết định trong thời gian ngắn nhất.",
-  },
-  {
-    title: "Bộ lọc chất lượng",
-    content:
-      "Lọc tín hiệu MUA/BÁN sớm nhất, realtime cho các mã thuận lợi cao nhất, đảm bảo tối ưu hóa lợi nhuận trên vốn đầu tư ban đầu.",
-  },
-  {
-    title: "Tự động thông báo",
-    content:
-      "Hệ thống tự động gửi cảnh báo tín hiệu đến người dùng qua nhiều kênh: Email, Zalo, Telegram, giúp không bỏ lỡ cơ hội.",
-  },
-  {
-    title: "Giao dịch tự động và linh hoạt",
-    content:
-      "Bot có khả năng thực hiện giao dịch tự động dựa trên các chiến lược đã được lập trình sẵn hoặc tùy chỉnh theo nhu cầu của bạn.",
-  },
-  {
-    title: "Hỗ Trợ 24/7",
-    content:
-      "Bot hoạt động liên tục 24/7, giúp bạn luôn nắm bắt được mọi biến động của thị trường.",
-  },
-];
-
-const FeatureCarousel = () => {
-  const settings = {
-    autoplay: true,
-    autoplaySpeed: 3000,
-    initialSlide: 0,
-    centerMode: true,
-    centerPadding: "60px",
-    slidesToShow: 3,
-    infinite: true,
-    speed: 500,
-    arrows: false,
-    dots: true,
-    focusOnSelect: true,
-    responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 1,
-        },
-      },
-    ],
-  };
+import { api } from "../services/api";
+import moment from "moment";
 
 const { Option } = Select;
 
