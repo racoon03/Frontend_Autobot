@@ -1,11 +1,11 @@
 import { Card, Table } from "antd";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { priceBotService, type PriceBot } from '../services/priceBotService';
+import { botTradingService, type BotTrading } from '../services/botService';
 
 export default function About() {
 //table---------------------------------------------------------------------
-  const [botListData, setBotListData] = useState<PriceBot[]>([]);
+  const [botListData, setBotListData] = useState<BotTrading[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,9 +13,9 @@ export default function About() {
     const fetchBotData = async () => {
       try {
         setLoading(true);
-        const data = await priceBotService.getAllPriceBots();
+        const data = await botTradingService.getAllBotTradings();
         setBotListData(data); 
-        setError(null); 
+        setError(null);
       } catch (err) {
         console.error("Failed to fetch bot list:", err);
         setError("Không thể tải danh sách bot. Vui lòng thử lại sau.");
@@ -28,50 +28,31 @@ export default function About() {
     fetchBotData(); 
   }, []); 
 
+
   const columns = [
     {
-      title: 'Mã Bot',
-      dataIndex: 'botTradingId',
-      key: 'botTradingId',
+      title: 'Tên bot',
+      dataIndex: 'name',
+      key: 'name',
     },
     {
-      title: 'Mô Tả Gói',
-      dataIndex: 'description',
-      key: 'description',
+      title: 'Số lệnh',
+      dataIndex: 'commandNumber',
+      key: 'commandNumber',
     },
     {
-      title: 'Thời Hạn (Tháng)',
-      dataIndex: 'month',
-      key: 'month',
+      title: 'Lợi nhuận',
+      dataIndex: 'profit',
+      key: 'profit',
+      render: (profit: number) => `${profit.toLocaleString('vi-VN')} VND`,
     },
     {
-      title: 'Giá Gốc (VNĐ)',
-      dataIndex: 'price',
-      key: 'price',
-      render: (price: number) => price.toLocaleString('vi-VN'),
+      title: 'Tỉ lệ thắng',
+      dataIndex: 'winRate',
+      key: 'winRate',
+      render: (winRate: number) => `${winRate}%`,
     },
-    {
-      title: 'Giảm Giá',
-      dataIndex: 'discount',
-      key: 'discount',
-      render: (discount: number) => `${discount}%`,
-    },
- 
-    {
-      title: 'Giá Sau Giảm (VNĐ)',
-      key: 'finalPrice',
-      render: (record: PriceBot) => {
-        const finalPrice = record.price * (1 - record.discount / 100);
-        return finalPrice.toLocaleString('vi-VN');
-      }
-    }
   ];
-
-
-  const dataSource = botListData.map(bot => ({
-    ...bot,
-    key: `${bot.botTradingId}-${bot.month}-${bot.price}`,
-  }));
 
   return (
     <div className="mx-0 my-0 px-0 py-0">
@@ -165,7 +146,7 @@ export default function About() {
           <div className="mx-8 items-center">
 
             <h2 className="text-2xl text-center font-bold text-black mb-6 mt-24">
-              Bảng Giá Các Gói Bot
+              THÔNG SỐ LỆNH BOT
             </h2>
 
             {loading && <p className="text-black text-center">Đang tải dữ liệu...</p>}
@@ -173,7 +154,7 @@ export default function About() {
             {!loading && !error && (
               <Table
                 columns={columns}
-                dataSource={dataSource}
+                dataSource={botListData}
                 components={{
                   header: {
                     cell: (props: any) => (
