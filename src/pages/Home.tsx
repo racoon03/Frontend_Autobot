@@ -233,9 +233,7 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-
       {/* tinh nang chinh*/}
-
       <section className="py-16 lg:py-24 bg-slate-50">
         <div className="mb-20">
           <h2 className="text-center md:text-4xl font-bold text-gray-700 mb-10">
@@ -283,8 +281,8 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-
       {/*bang gia dich vu */}
+      // Thay thế đoạn sau trong phần render bảng giá dịch vụ
       <section className="bg-gray-300 py-16 text-center">
         <div className="container mx-auto px-4">
           <h2 className="md:text-4xl font-bold text-gray-700 mb-10">
@@ -295,7 +293,7 @@ const HomePage = () => {
             <p className="text-center text-white">
               Đang tải dữ liệu gói dịch vụ...
             </p>
-          ) : priceBots.length === 0 ? (
+          ) : !Array.isArray(priceBots) || priceBots.length === 0 ? (
             <p className="text-center text-white">
               Không có dữ liệu gói dịch vụ.
             </p>
