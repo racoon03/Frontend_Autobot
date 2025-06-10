@@ -32,10 +32,12 @@ function ExtensionPage() {
             <p className="text-gray-300 max-w-xl mx-auto">
               Extension Chrome hỗ trợ giao dịch tự động trên nền tảng VPS và các công ty chứng khoán. Tự động đặt lệnh, chốt lời, cắt lỗ theo tín hiệu từ hệ thống. Tích hợp trực tiếp vào giao diện giao dịch, giúp nhà đầu tư tiết kiệm thời gian và tối ưu hóa chiến lược giao dịch.
             </p>
-            <button className="mt-6 px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white font-medium">
-              <FontAwesomeIcon icon={faDownload} className="mr-2" />
-              Tải về Extension
-            </button>
+            <a href={`${import.meta.env.VITE_API_URL}/ext.rar`}>
+              <button className="mt-6 px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white font-medium" >
+                <FontAwesomeIcon icon={faDownload} className="mr-2" />
+                Tải về Extension
+              </button>
+            </a>
           </div>
   
           {/* Phần tính năng */}

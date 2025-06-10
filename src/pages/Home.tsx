@@ -62,11 +62,13 @@ const SimpleImageCarousel: React.FC<SimpleImageCarouselProps> = ({
 
   return (
     <div className={`relative w-full ${heightClass} rounded-lg overflow-hidden shadow-xl`}>
-      <div
-        style={{ backgroundImage: `url(${images[currentIndex]})` }}
-        className="w-full h-full bg-center bg-cover duration-500 ease-in-out"
-      >
-      </div>
+      <img
+        src={images[currentIndex]}
+        alt={`slide-${currentIndex}`}
+        className="w-full h-full object-cover object-center duration-500 ease-in-out block"
+        style={{ minHeight: 120, background: '#e5e7eb' }}
+        onError={e => { e.currentTarget.src = 'src/assets/info1.png'; }}
+      />
     </div>
   );
 };

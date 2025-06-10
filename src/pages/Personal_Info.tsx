@@ -23,11 +23,11 @@ function PersonalInfomation() {
         const currentUser = authService.getCurrentUser();
         if (!currentUser) return;
 
-        const res = await api.get(`/api/user/get/${currentUser.userId}`, {
-          headers: { Authorization: `Bearer ${authService.getAccessToken()}` },
-        });
+        // const res = await api.get(`/api/user/get/${currentUser.userId}`, {
+        //   headers: { Authorization: `Bearer ${authService.getAccessToken()}` },
+        // });
 
-        setUserInfo(res.data);
+        setUserInfo(currentUser);
       } catch (error: any) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
       }
@@ -140,10 +140,10 @@ function PersonalInfomation() {
               <div className="bg-[#2a3b5a] rounded-lg p-4 space-y-1">
                 {userInfo ? (
                   <>
-                    <p>Tên: {userInfo["fullname"] ?? "Không có tên"}</p>
+                    <p>Tên: {userInfo["name"] ?? "Không có tên"}</p>
                     <p>
                       Số điện thoại:{" "}
-                      {userInfo["userName"] ?? "Không có số điện thoại"}
+                      {userInfo["phoneNumber"] ?? "Không có số điện thoại"}
                     </p>
                     <p>Email: {userInfo["email"]}</p>
                   </>
