@@ -109,54 +109,27 @@ const Login: React.FC = () => {
 
   return (
     <div
-      style={{
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f3f4f6',
-        fontFamily: 'system-ui, -apple-system, Helvetica, Arial, sans-serif',
-      }}
+      className="w-screen min-h-screen flex items-center justify-center bg-gray-100 font-sans"
+      style={{ fontFamily: 'system-ui, -apple-system, Helvetica, Arial, sans-serif' }}
     >
       {/* KHỐI LOGIN CHÍNH */}
       <div
-        style={{
-          width: '900px',
-          height: '550px',
-          display: 'flex',
-          borderRadius: '16px',
-          overflow: 'hidden',
-          boxShadow: '0 15px 40px rgba(0, 0, 0, 0.1)',
-          backgroundColor: 'white',
-        }}
+        className="w-full sm:w-[900px] h-auto sm:h-[550px] flex rounded-2xl overflow-hidden shadow-2xl bg-white max-w-full flex-col sm:flex-row overflow-y-auto"
+        style={{ boxShadow: '0 15px 40px rgba(0, 0, 0, 0.1)', maxHeight: '100vh' }}
       >
         {/* TRÁI - ẢNH */}
-        <div style={{ flex: 1, position: 'relative' }}>
+        <div className="flex-1 relative min-h-[180px] hidden sm:block">
           <img
-            src="src\assets\1000_F_1369373417_m2Oa554rcYSDHPXowqTv2XnqbdfWhnJY.jpg"
+            src="src/assets/1000_F_1369373417_m2Oa554rcYSDHPXowqTv2XnqbdfWhnJY.jpg"
             alt="bg"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            className="w-full h-full object-cover"
           />
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundColor: 'rgba(30, 64, 175, 0.5)',
-            }}
-          />
+          <div className="absolute inset-0 bg-blue-900/60" />
         </div>
 
         {/* PHẢI - FORM */}
         <div
-          style={{
-            flex: 1,
-            padding: '50px 60px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-          }}
+          className="flex-1 flex flex-col justify-center bg-white px-6 py-8 sm:px-[60px] sm:py-[50px]"
         >
           {/* LOGO */}
           <Link to="/">

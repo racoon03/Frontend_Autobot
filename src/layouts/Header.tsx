@@ -1,10 +1,11 @@
-import { Layout, Menu, Avatar, Dropdown, Space } from 'antd';
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { Layout, Menu, Avatar, Dropdown, Space, Drawer, Button } from 'antd';
+import { UserOutlined, LogoutOutlined, MenuOutlined, CloseOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { navigateItems } from '../routes';
 import { useAuth } from '../App';
 import { authService } from '../services/authService';
 import type { AuthState } from '../services/authReducer';
+import { useState } from 'react';
 
 const { Header } = Layout;
 
@@ -12,6 +13,7 @@ function TradingBotHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const auth = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   if (!auth) {
     return null;
@@ -46,7 +48,7 @@ function TradingBotHeader() {
           <img src="src/assets/iconbot.png" alt="logo" className="h-20" />
           <span className="text-2xl text-white" style={{ fontFamily: 'Orbitron, sans-serif' }}>TradingBot</span>
         </div>
-        <div className='flex items-center space-x-4 w-full max-w-3xl'>
+        <div className='hidden md:flex items-center space-x-4 w-full max-w-3xl'>
             <Menu
               mode="horizontal"
               theme="dark"
@@ -70,7 +72,59 @@ function TradingBotHeader() {
               </div>
             )}
         </div>
+        <Button
+          className="md:hidden flex items-center justify-center text-white border-none bg-transparent text-2xl"
+          icon={<MenuOutlined />}
+          onClick={() => setIsMobileMenuOpen(true)}
+        />
       </Header>
+
+      <Drawer
+        title={
+          <div className="flex items-center space-x-2 bg-blue-900 px-2 py-2 rounded">
+            <img src="src/assets/iconbot.png" alt="logo" className="h-12" />
+            <span className="text-xl text-white" style={{ fontFamily: 'Orbitron, sans-serif' }}>TradingBot</span>
+          </div>
+        }
+        placement="left"
+        onClose={() => setIsMobileMenuOpen(false)}
+        open={isMobileMenuOpen}
+        className="md:hidden"
+        bodyStyle={{ padding: 0 }}
+        headerStyle={{ background: '#1e3a8a', padding: 0 }}
+        closeIcon={<CloseOutlined style={{ color: 'white', fontSize: 15 }} />}
+      >
+        <div className="flex flex-col h-full bg-blue-900">
+          <Menu
+            mode="vertical"
+            theme="dark"
+            className="bg-blue-900 border-none custom-menu"
+            items={navigateItems}
+            onClick={({ key }) => {
+              handleMenuClick(key);
+              setIsMobileMenuOpen(false);
+            }}
+            selectedKeys={[selectedKey]}
+          />
+          <div className="p-0 border-t border-blue-800 mt-auto">
+            <div className="bg-blue-900 w-full py-8 flex flex-col items-center justify-center">
+              {state.isAuthenticated ? (
+                <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenuClick }} trigger={['click']}>
+                  <div className="cursor-pointer flex flex-col items-center justify-center">
+                    <Avatar icon={<UserOutlined />} className="bg-blue-500" />
+                    <div className="text-sm font-semibold text-white mt-2">{state.user?.name || 'Tên người dùng'}</div>
+                  </div>
+                </Dropdown>
+              ) : (
+                <div className="flex flex-col items-center justify-center space-y-1">
+                  <Avatar icon={<UserOutlined />} className="bg-blue-500 cursor-pointer" onClick={() => { navigate('/login'); setIsMobileMenuOpen(false); }} />
+                  <span className="text-sm font-semibold text-white mt-2">Đăng nhập</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Drawer>
 
       <style>{`
         .custom-menu .ant-menu-title-content {

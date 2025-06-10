@@ -69,7 +69,7 @@ const About: React.FC = () => {
         uid: '-1',
         name: 'current-image',
         status: 'done',
-        url: content.url,
+        url: `${import.meta.env.VITE_API_URL || 'http://localhost:5131'}/assets/images/${content.url}`,
       }]);
     } else {
       setFileList([]);
@@ -145,6 +145,7 @@ const About: React.FC = () => {
 
     return (
       <div key={content.id} className={`block-animate-on-scroll h-[75vh] flex flex-col ${flexDirection} justify-center md:space-x-8 items-start px-4 py-8 ${bgColor} mb-40 pt-28`}>
+        
         <img
           src={imageUrl}
           alt={content.title}
@@ -292,7 +293,7 @@ const About: React.FC = () => {
           </div>
 
       <div className="w-full flex justify-center mb-12">
-        <Link to="/register">
+        <Link to="/service-rate">
           <button className="mt-6 px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white font-medium">
             Đăng Ký Ngay
           </button>
@@ -330,10 +331,12 @@ const About: React.FC = () => {
           <Form.Item
             label="Ảnh"
             name="image"
+            rules={[{ required: true, message: 'Vui lòng tải lên ít nhất một hình ảnh' }]}
           >
             <Upload
               listType="picture-card"
               maxCount={1}
+              
               fileList={fileList}
               beforeUpload={(file) => {
                 const isLt5M = file.size / 1024 / 1024 < 5;
