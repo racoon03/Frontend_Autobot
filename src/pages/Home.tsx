@@ -19,7 +19,7 @@ const carouselImages = [
     './src/assets/info3.png',
   ];
 
-const carouselHeightClass = "h-[300px] sm:h-[400px] md:h-[500px] w-[1000px]";
+const carouselHeightClass = "h-[300px] sm:h-[400px] md:h-[480px]";
 
 interface SimpleImageCarouselProps {
   images: string[];
@@ -260,7 +260,7 @@ const ProcessStepCard: React.FC<ProcessStepCardProps> = ({ icon, title, content 
   return (
     <div className="font-sans">
         {/*deoo biet sua sao cho vua */}
-        <div className="bg-gray-200 text-gray-700 h-[75vh] flex items-center py-16 px-4 sm:px-6 lg:px-8">
+        <div className="bg-gray-200 text-gray-700 h-[100vh] md:h-[100vh] lg:h-[65vh] flex items-center py-16 px-4 md:pt-40 lg:pt-0 sm:px-6 lg:px-8">
               <div className="container mx-auto flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
                 {/*ben trai */}
                 <div className="lg:w-1/2 text-center lg:text-left">
@@ -271,7 +271,7 @@ const ProcessStepCard: React.FC<ProcessStepCardProps> = ({ icon, title, content 
                     Tự động giao dịch phái sinh
                   </p>
                   {!isLoggedIn && (
-                    <div className="flex justify-start gap-4">
+                    <div className="flex justify-center lg:justify-start gap-4">
                       <Link to="/login">
                         <Button className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-8 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105">
                           Đăng nhập
@@ -300,11 +300,11 @@ const ProcessStepCard: React.FC<ProcessStepCardProps> = ({ icon, title, content 
       {/* tinh nang chinh*/}
 
 
-      <section className="py-16 lg:py-24 bg-slate-50">
+      <section className="py-16 lg:py-24 bg-slate-50 w-full md:h-4/5 lg:h-3/6">
 
         <div className="mb-20">
-          <h2 className= "text-center md:text-4xl font-bold text-gray-700 mb-10">Tính Năng Hệ Thống</h2>
-      </div>
+          <h2 className= "text-center md:text-4xl font-bold text-gray-700  md:mt-32 lg:mt-0">Tính Năng Hệ Thống</h2>
+        </div>
 
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
