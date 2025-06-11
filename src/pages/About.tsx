@@ -144,19 +144,19 @@ const About: React.FC = () => {
     console.log('Final image URL for rendering:', imageUrl);
 
     return (
-      <div key={content.id} className={`block-animate-on-scroll h-[75vh] flex flex-col ${flexDirection} justify-center md:space-x-8 items-start px-4 py-8 ${bgColor} mb-40 pt-28`}>
+      <div key={content.id} className={`block-animate-on-scroll h-[75vh] flex flex-col md:flex-col lg:flex-row ${flexDirection} justify-center items-start px-4 py-8 ${bgColor} mb-40 pt-28`}>
         
         <img
           src={imageUrl}
           alt={content.title}
-          className="p-4 h-[300px] sm:h-[400px] md:h-[500px] object-contain"
+          className="p-4 h-[400px] max-sm:h-[300px] max-md:h-[400px] object-contain md:justify-center"
           onError={(e) => {
             console.error('Image load error:', e);
             e.currentTarget.src = `src/assets/info${index + 1}.png`;
           }}
         />
         <div className="pt-16 relative">
-          <Card className="w-[70vh] h-[300px] rounded-2xl shadow-lg">
+          <Card className=" sm:w-[600px] lg:w-[500px] h-[350px] sm:h-[250px] lg:h-[280px] rounded-2xl shadow-lg md:justify-center">
             <h2 className="text-2xl font-bold mb-2">{content.title}</h2>
             <p className="text-lg text-gray-600 mb-4">{content.content}</p>
           </Card>
